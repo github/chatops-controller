@@ -9,3 +9,4 @@
 /tmp/
 /bin/
 /vendor/gems
+/spec/dummy/log/
