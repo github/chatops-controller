@@ -3,23 +3,30 @@ module ChatOps
     extend ActiveSupport::Concern
 
     included do
-      before_filter :ensure_chatops_authenticated, :only => [:execute, :list]
-      before_filter :ensure_user_given, :only => [:execute, :list]
-    end
-
-    def execute
-      method = params[:method].to_sym
-      return jsonrpc_method_not_found unless self.class.chatops[method].present?
-
-      send method
+      before_filter :ensure_chatops_authenticated
+      before_filter :ensure_user_given
+      before_filter :ensure_method_exists
     end
 
     def list
+      chatops = self.class.chatops
+      chatops.each { |name, hash| hash[:path] = request.path + "/#{name}" }
       render :json => {
         namespace: self.class.chatops_namespace,
         help: self.class.chatops_help,
-        methods: self.class.chatops }
+        methods: chatops }
     end
+
+    def process(*args)
+      if params[:method].present?
+        params[:action] = params[:method]
+      end
+      super
+    rescue AbstractController::ActionNotFound
+      return jsonrpc_method_not_found
+    end
+
+    protected
 
     def jsonrpc_params
       params["params"] || {}
@@ -58,13 +65,13 @@ module ChatOps
     end
 
     def ensure_user_given
-      return true unless params[:action] == "execute"
+      return true unless chatop_names.include?(params[:action].to_sym)
       return true if params[:user].present?
       jsonrpc_invalid_params("A username must be supplied as 'user'")
     end
 
     def ensure_chatops_authenticated
-      return true unless %w{execute list}.include?(params[:action])
+      return true unless (chatop_names + [:list]).include?(params[:action].to_sym)
       authenticated = authenticate_with_http_basic do |u, p|
         if ENV["CHATOPS_AUTH_TOKEN"].nil?
           raise StandardError, "Attempting to authenticate chatops with nil token"
@@ -79,6 +86,14 @@ module ChatOps
       unless authenticated
         render :status => :forbidden, :text => "Not authorized"
       end
+    end
+
+    def ensure_method_exists
+      return jsonrpc_method_not_found unless (chatop_names + [:list]).include?(params[:action].to_sym)
+    end
+
+    def chatop_names
+      self.class.chatops.keys
     end
 
     module ClassMethods
