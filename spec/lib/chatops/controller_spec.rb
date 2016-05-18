@@ -22,7 +22,7 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success "You just foo and bar like it just don't matter"
     end
 
-    skip_before_filter :non_chatop_method, :ensure_method_exists
+    skip_before_filter :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
       render :text => "Why would you have something thats not a chatop?"
     end

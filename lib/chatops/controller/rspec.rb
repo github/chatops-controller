@@ -7,7 +7,7 @@ module ChatOpsSpecHelpers
     args = params.dup.symbolize_keys
     user = args.delete :user
 
-    post(:execute, {:method => method, :user => user, :params => args})
+    post method, :method => method, :user => user, :params => args
   end
 
   def chatop_response
