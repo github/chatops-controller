@@ -97,13 +97,13 @@ describe ActionController::Base, type: :controller do
             "help" => "where can i deploy?",
             "regex" => /(?:where can i deploy|wcid)(?: (?<app>\S+))?/.source,
             "params" => ["app"],
-            "path" => "/_chatops/wcid"
+            "path" => "wcid"
           },
           "foobar" => {
             "help" => "how to foo and bar",
             "regex" => /(?:how can i foo and bar all at once)?/.source,
             "params" => [],
-            "path" => "/_chatops/foobar"
+            "path" => "foobar"
           }
         }
       })

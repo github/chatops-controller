@@ -10,7 +10,7 @@ module ChatOps
 
     def list
       chatops = self.class.chatops
-      chatops.each { |name, hash| hash[:path] = request.path + "/#{name}" }
+      chatops.each { |name, hash| hash[:path] = name }
       render :json => {
         namespace: self.class.chatops_namespace,
         help: self.class.chatops_help,
