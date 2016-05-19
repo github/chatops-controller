@@ -8,13 +8,17 @@ Gem::Specification.new do |s|
   s.name        = "chatops_controller"
   s.version     = ChatopsController::VERSION
   s.authors     = ["Ben Lavender"]
+  s.homepage    = "https://github.com/github/chatops_controller"
   s.email       = ["bhuga@github.com"]
-  s.summary       = %q{Rails helpers to create JSON-RPC chatops}
+  s.license     = "unknown - maybe we'll open source this?"
+  s.summary     = %q{Rails helpers to create JSON-RPC chatops}
+  s.description = %q{See the README for documentation"}
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
-  s.test_files = Dir["test/**/*"]
+  s.files = Dir["{app,config,db,lib}/**/*", "README.md"]
+  s.test_files = Dir["spec/**/*"]
 
-  s.add_dependency "rails", "~> 4.2.6"
+  s.add_dependency "rails", "~> 4.0"
 
-  s.add_development_dependency "rspec-rails"
+  s.add_development_dependency "rspec-rails", "~> 0"
+  s.add_development_dependency "pry", "~> 0"
 end

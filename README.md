@@ -22,7 +22,7 @@ Some routing boilerplate is required in `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  post "/_chatops" => "chatops#execute"
+  post "/_chatops/:action", controller: "anonymous"
   get  "/_chatops" => "chatops#list"
 end
 ```

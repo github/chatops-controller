@@ -6,6 +6,8 @@ describe ActionController::Base, type: :controller do
     chatops_namespace :test
     chatops_help "ChatOps of and relating to testing"
 
+    before_filter :ensure_app_given, :only => [:wcid]
+
     chatop :wcid,
     /(?:where can i deploy|wcid)(?: (?<app>\S+))?/,
     "where can i deploy?" do
@@ -20,16 +22,26 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success "You just foo and bar like it just don't matter"
     end
 
+    skip_before_filter :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
       render :text => "Why would you have something thats not a chatop?"
+    end
+
+    def unexcluded_chatop_method
+      render :text => "Sadly, I'll never be reached"
+    end
+
+    def ensure_app_given
+      return jsonrpc_invalid_params("I need an app, every time") unless jsonrpc_params[:app].present?
     end
   end
 
   before :each do
     routes.draw do
-      post "/_chatops" => "anonymous#execute"
       get  "/_chatops" => "anonymous#list"
+      post  "/_chatops/:action", controller: "anonymous"
       get  "/other" => "anonymous#non_chatop_method"
+      get  "/other_will_fail" => "anonymous#unexcluded_chatop_method"
     end
 
     ENV["CHATOPS_AUTH_TOKEN"] = "foo"
@@ -84,20 +96,21 @@ describe ActionController::Base, type: :controller do
           "wcid" => {
             "help" => "where can i deploy?",
             "regex" => /(?:where can i deploy|wcid)(?: (?<app>\S+))?/.source,
-            "params" => ["app"]
+            "params" => ["app"],
+            "path" => "wcid"
           },
           "foobar" => {
             "help" => "how to foo and bar",
             "regex" => /(?:how can i foo and bar all at once)?/.source,
-            "params" => []
-
+            "params" => [],
+            "path" => "foobar"
           }
         }
       })
     end
 
     it "requires a user be sent to chatops" do
-      post :execute, :method => "foobar"
+      post :foobar
       expect(response.status).to eq 400
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -110,7 +123,20 @@ describe ActionController::Base, type: :controller do
     end
 
     it "returns method not found for a not found method" do
-      post :execute, :method => "barfoo", :user => "foo"
+      post :barfoo, :user => "foo"
+      expect(json_response).to eq({
+        "jsonrpc" => "2.0",
+        "id" => nil,
+        "error" => {
+          "code" => -32601,
+          "message" => "Method not found"
+        }
+      })
+      expect(response.status).to eq 404
+    end
+
+    it "requires skipping a before_filter to find non-chatop methods, sorry about that" do
+      get :unexcluded_chatop_method
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -123,7 +149,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "runs a known method" do
-      post :execute, :method => "foobar", :user => "foo"
+      post :foobar, :user => "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -133,7 +159,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "passes parameters to methods" do
-      post :execute, :method => "wcid", :user => "foo", :params => { "app" => "foo" }
+      post :wcid, :user => "foo", :params => { "app" => "foo" }
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -142,8 +168,21 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 200
     end
 
+    it "uses typical controller fun like before_filter" do
+      post :wcid, :user => "foo", :params => {}
+      expect(json_response).to eq({
+        "jsonrpc" => "2.0",
+        "id" => nil,
+        "error" => {
+          "code" => -32602,
+          "message" => "I need an app, every time"
+        }
+      })
+      expect(response.status).to eq 400
+    end
+
     it "allows methods to return invalid params with a message" do
-      post :execute, :method => "wcid", :user => "foo", :params => { "app" => "nope" }
+      post :wcid, :user => "foo", :params => { "app" => "nope" }
       expect(response.status).to eq 400
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
