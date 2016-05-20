@@ -33,7 +33,7 @@ module ChatOps
     end
 
     def jsonrpc_success(message)
-      jsonrpc_response :result => message
+      jsonrpc_response :result => message.to_s
     end
 
     def jsonrpc_parse_error
@@ -50,11 +50,11 @@ module ChatOps
 
     def jsonrpc_invalid_params(message)
       message ||= "Invalid parameters"
-      jsonrpc_error(-32602, 400, message)
+      jsonrpc_error(-32602, 400, message.to_s)
     end
 
     def jsonrpc_error(number, http_status, message)
-      jsonrpc_response({ :error => { :code => number, :message => message } }, http_status)
+      jsonrpc_response({ :error => { :code => number, :message => message.to_s } }, http_status)
     end
 
     def jsonrpc_response(hash, http_status = nil)
