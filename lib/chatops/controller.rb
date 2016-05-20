@@ -18,9 +18,6 @@ module ChatOps
     end
 
     def process(*args)
-      if params[:method].present?
-        params[:action] = params[:method]
-      end
       super
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
