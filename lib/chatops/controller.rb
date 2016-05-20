@@ -33,6 +33,7 @@ module ChatOps
     def jsonrpc_success(message)
       jsonrpc_response :result => message.to_s
     end
+    alias_method :chatop_send, :jsonrpc_success
 
     def jsonrpc_parse_error
       jsonrpc_error(-32700, 500, "Parse error")
