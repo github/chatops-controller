@@ -18,7 +18,7 @@ module ChatOps
     end
 
     def process(*args)
-      params.merge!(jsonrpc_params.except(:user, :method, :controller, :action, :params))
+      params.merge!(jsonrpc_params.except(:user, :method, :controller, :action, :params, :room_id))
       super
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
