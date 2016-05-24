@@ -7,7 +7,8 @@ module ChatOps::Controller::TestCaseHelpers
   def chatop(method, params = {})
     args = params.dup.symbolize_keys
     user = args.delete :user
-    post method, :method => method, :user => user, :params => args
+    room_id = args.delete :room_id
+    post method, :method => method, :room_id => room_id, :user => user, :params => args
   end
 
   def chatop_response

@@ -18,9 +18,7 @@ module ChatOps
     end
 
     def process(*args)
-      if params[:method].present?
-        params[:action] = params[:method]
-      end
+      params.merge!(jsonrpc_params.except(:user, :method, :controller, :action, :params, :room_id))
       super
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
@@ -35,6 +33,7 @@ module ChatOps
     def jsonrpc_success(message)
       jsonrpc_response :result => message.to_s
     end
+    alias_method :chatop_send, :jsonrpc_success
 
     def jsonrpc_parse_error
       jsonrpc_error(-32700, 500, "Parse error")
