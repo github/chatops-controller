@@ -11,6 +11,25 @@ module ChatOps::Controller::TestCaseHelpers
     post method, :method => method, :room_id => room_id, :user => user, :params => args
   end
 
+  def chat(message, user, room_id = "123")
+    get :list
+    json_response = JSON.load(response.body)
+    matchers = json_response["methods"].map { |name, metadata|
+      metadata = metadata.dup
+      metadata["name"] = name
+      metadata["regex"] = Regexp.new(metadata["regex"], "i")
+      metadata
+    }
+    matcher = matchers.first { |matcher| matcher["regex"].match(message) }
+    match_data = matcher["regex"].match(message)
+    jsonrpc_params = {}
+    matcher["params"].each do |param|
+      jsonrpc_params[param] = match_data[param.to_sym]
+    end
+    jsonrpc_params.merge!(user: user, room_id: room_id)
+    chatop matcher["name"].to_sym, jsonrpc_params
+  end
+
   def chatop_response
     json_response = JSON.load(response.body)
     if json_response["error"].present?
