@@ -1,5 +1,7 @@
 module ChatOps::Controller::TestCaseHelpers
 
+  class NoMatchingCommandRegex < StandardError ; end
+
   def chatops_auth!(user = "_", pass = ENV["CHATOPS_AUTH_TOKEN"])
     request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(user, pass)
   end
@@ -21,6 +23,10 @@ module ChatOps::Controller::TestCaseHelpers
       metadata
     }
     matcher = matchers.first { |matcher| matcher["regex"].match(message) }
+    matcher = matchers.find { |matcher| matcher["regex"].match(message) }
+
+    raise NoMatchingCommandRegex.new("No command matches '#{message}'") unless matcher
+
     match_data = matcher["regex"].match(message)
     jsonrpc_params = {}
     matcher["params"].each do |param|
