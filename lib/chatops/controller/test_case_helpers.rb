@@ -19,7 +19,7 @@ module ChatOps::Controller::TestCaseHelpers
     matchers = json_response["methods"].map { |name, metadata|
       metadata = metadata.dup
       metadata["name"] = name
-      metadata["regex"] = Regexp.new(metadata["regex"], "i")
+      metadata["regex"] = Regexp.new("^#{metadata["regex"]}$", "i")
       metadata
     }
     matcher = matchers.first { |matcher| matcher["regex"].match(message) }
