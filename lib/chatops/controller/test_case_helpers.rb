@@ -22,7 +22,6 @@ module ChatOps::Controller::TestCaseHelpers
       metadata["regex"] = Regexp.new("^#{metadata["regex"]}$", "i")
       metadata
     }
-    matcher = matchers.first { |matcher| matcher["regex"].match(message) }
     matcher = matchers.find { |matcher| matcher["regex"].match(message) }
 
     raise NoMatchingCommandRegex.new("No command matches '#{message}'") unless matcher

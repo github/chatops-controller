@@ -214,6 +214,12 @@ describe ActionController::Base, type: :controller do
         expect(request.params["params"]["app"]).to eq "foobar"
         expect(chatop_response).to eq "You can deploy foobar just fine."
       end
+
+      it "anchors regexes" do
+        expect {
+          chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
+        }.to raise_error(ChatOps::Controller::TestCaseHelpers::NoMatchingCommandRegex)
+      end
     end
   end
 end
