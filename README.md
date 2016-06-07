@@ -27,6 +27,9 @@ Rails.application.routes.draw do
 end
 ```
 
+Before you deploy, add the RPC authentication tokens to your app's environment,
+below.
+
 Next, tell hubot about your endpoint:
 
 ```
@@ -67,18 +70,32 @@ The next line is a string, which is a single line of help that will be displayed
 in chat for `.help echo`.
 
 The DSL takes a block, which is the code that will run when the chat robot sees
-this regex. Arguments will be available in a hash called `jsonrpc_params`,
-similar to rails' regular `params`.
+this regex. Arguments will be available in the `params` hash. `params[:user]`
+and `params[:room_id]` are special, and will be set by hubot. `user` will always
+be the github login of the user typing the command, and `room_id` will be where
+it was typed.
 
-You can return `jsonrpc_success` with a string to return text to chat. In this
-case, we're just echoing the text back with a prefix.
+You can return `jsonrpc_success` with a string to return text to chat. It's fine
+to post error conditions, like `project not found`, using `jsonrpc_success`.
+In this case, `jsonrpc_success` implies that the RPC worked, not the command.
 
-TODO: chatops are not 'controller actions' and don't work with `before_filter`
-like we'd want.
+ChatOps are regular old rails controller actions, and you can use niceties like
+`before_filter` and friends. `before_filter :echo, :load_user` for the above
+case would call `load_user` before running `echo`.
 
 ## Authentication
 
-TODO: document this, but its god tokens.
+Add the tokens to your app's environment:
+
+```shell
+$ gh-config CHATOPS_AUTH_TOKEN=abc CHATOPS_ALT_AUTH_TOKEN=abc myapp
+```
+
+## Staging
+
+Use `.rpc set suffix https://myapp.githubapp.com/_chatops in staging`, and all
+your chatops will require the suffix `in staging`. This means you can do `.echo
+foo` and `.echo foo in staging` to use two different servers to run `.echo foo`.
 
 ## Development
 
