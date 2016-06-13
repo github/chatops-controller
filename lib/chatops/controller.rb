@@ -51,6 +51,7 @@ module ChatOps
       message ||= "Invalid parameters"
       jsonrpc_error(-32602, 400, message.to_s)
     end
+    alias_method :jsonrpc_failure, :jsonrpc_invalid_params
 
     def jsonrpc_error(number, http_status, message)
       jsonrpc_response({ :error => { :code => number, :message => message.to_s } }, http_status)
