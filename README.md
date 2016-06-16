@@ -75,9 +75,9 @@ and `params[:room_id]` are special, and will be set by hubot. `user` will always
 be the github login of the user typing the command, and `room_id` will be where
 it was typed.
 
-You can return `jsonrpc_success` with a string to return text to chat. It's fine
-to post error conditions, like `project not found`, using `jsonrpc_success`.
-In this case, `jsonrpc_success` implies that the RPC worked, not the command.
+You can return `jsonrpc_success` with a string to return text to chat. If you
+have an input validation or other handle-able error, you can use
+`jsonrpc_failure` to send a helpful error message.
 
 ChatOps are regular old rails controller actions, and you can use niceties like
 `before_filter` and friends. `before_filter :echo, :load_user` for the above
