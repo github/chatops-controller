@@ -6,7 +6,7 @@ A minimal controller example:
 
 ```ruby
 class ChatOpsController < ApplicationController
-  include ::ChatOps::ControllerHelpers
+  include ::ChatOps::Controller
 
   chatops_namespace :echo
 
