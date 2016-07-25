@@ -18,7 +18,11 @@ module ChatOps
     end
 
     def process(*args)
-      params.merge!(jsonrpc_params.except(:user, :method, :controller, :action, :params, :room_id))
+      scrubbed_params = jsonrpc_params.except(
+        :user, :method, :controller, :action, :params, :room_id)
+
+      scrubbed_params.each { |k, v| params[k] = v }
+
       super
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
