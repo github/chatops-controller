@@ -3,9 +3,9 @@ module ChatOps
     extend ActiveSupport::Concern
 
     included do
-      before_filter :ensure_chatops_authenticated
-      before_filter :ensure_user_given
-      before_filter :ensure_method_exists
+      before_action :ensure_chatops_authenticated
+      before_action :ensure_user_given
+      before_action :ensure_method_exists
     end
 
     def list

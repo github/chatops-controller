@@ -80,7 +80,7 @@ have an input validation or other handle-able error, you can use
 `jsonrpc_failure` to send a helpful error message.
 
 ChatOps are regular old rails controller actions, and you can use niceties like
-`before_filter` and friends. `before_filter :echo, :load_user` for the above
+`before_action` and friends. `before_action :echo, :load_user` for the above
 case would call `load_user` before running `echo`.
 
 ## Authentication

@@ -6,7 +6,7 @@ describe ActionController::Base, type: :controller do
     chatops_namespace :test
     chatops_help "ChatOps of and relating to testing"
 
-    before_filter :ensure_app_given, :only => [:wcid]
+    before_action :ensure_app_given, :only => [:wcid]
 
     chatop :wcid,
     /(?:where can i deploy|wcid)(?: (?<app>\S+))?/,
@@ -22,7 +22,7 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success "You just foo and bar like it just don't matter"
     end
 
-    skip_before_filter :ensure_method_exists, only: :non_chatop_method
+    skip_before_action :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
       render :text => "Why would you have something thats not a chatop?"
     end
@@ -135,7 +135,7 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 404
     end
 
-    it "requires skipping a before_filter to find non-chatop methods, sorry about that" do
+    it "requires skipping a before_action to find non-chatop methods, sorry about that" do
       get :unexcluded_chatop_method
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -168,7 +168,7 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 200
     end
 
-    it "uses typical controller fun like before_filter" do
+    it "uses typical controller fun like before_action" do
       post :wcid, :user => "foo", :params => {}
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
