@@ -215,6 +215,16 @@ describe ActionController::Base, type: :controller do
         expect(chatop_response).to eq "You can deploy foobar just fine."
       end
 
+      it "works with generic arguments" do
+        chat "where can i deploy foobar --fruit apple --vegetable green celery", "bhuga"
+        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["user"]).to eq "bhuga"
+        expect(request.params["params"]["app"]).to eq "foobar"
+        expect(request.params["params"]["fruit"]).to eq "apple"
+        expect(request.params["params"]["vegetable"]).to eq "green celery"
+        expect(chatop_response).to eq "You can deploy foobar just fine."
+      end
+
       it "anchors regexes" do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
