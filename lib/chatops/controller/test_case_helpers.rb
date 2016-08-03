@@ -22,12 +22,15 @@ module ChatOps::Controller::TestCaseHelpers
       metadata["regex"] = Regexp.new("^#{metadata["regex"]}$", "i")
       metadata
     }
-    matcher = matchers.find { |matcher| matcher["regex"].match(message) }
 
-    raise NoMatchingCommandRegex.new("No command matches '#{message}'") unless matcher
+    named_params, command = extract_named_params(message)
 
-    match_data = matcher["regex"].match(message)
-    jsonrpc_params = {}
+    matcher = matchers.find { |matcher| matcher["regex"].match(command) }
+
+    raise NoMatchingCommandRegex.new("No command matches '#{command}'") unless matcher
+
+    match_data = matcher["regex"].match(command)
+    jsonrpc_params = named_params.dup
     matcher["params"].each do |param|
       jsonrpc_params[param] = match_data[param.to_sym]
     end
@@ -46,5 +49,19 @@ module ChatOps::Controller::TestCaseHelpers
   def chatop_error
     json_response = JSON.load(response.body)
     json_response["error"]["message"]
+  end
+
+  def extract_named_params(command_string)
+    params = {}
+
+    while last_index = command_string.rindex(" --")
+      arg = command_string[last_index..-1]
+      matches = arg.match(/ --(\S+)(.*)/)
+      params[matches[1]] = matches[2].strip
+      command_string = command_string.slice(0, last_index)
+    end
+
+    command_string = command_string.strip
+    [params, command_string]
   end
 end
