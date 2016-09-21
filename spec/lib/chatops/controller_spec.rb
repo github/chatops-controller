@@ -5,6 +5,7 @@ describe ActionController::Base, type: :controller do
     include ChatOps::Controller
     chatops_namespace :test
     chatops_help "ChatOps of and relating to testing"
+    chatops_error_response "Try checking haystack?"
 
     before_filter :ensure_app_given, :only => [:wcid]
 
@@ -92,6 +93,7 @@ describe ActionController::Base, type: :controller do
       expect(json_response).to eq({
         "namespace" => "test",
         "help" => "ChatOps of and relating to testing",
+        "error_response" => "Try checking haystack?",
         "methods" => {
           "wcid" => {
             "help" => "where can i deploy?",
