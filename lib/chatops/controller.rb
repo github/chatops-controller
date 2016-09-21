@@ -14,6 +14,7 @@ module ChatOps
       render :json => {
         namespace: self.class.chatops_namespace,
         help: self.class.chatops_help,
+        error_response: self.class.chatops_error_response,
         methods: chatops }
     end
 
@@ -104,18 +105,16 @@ module ChatOps
         define_method method_name, &block
       end
 
-      def chatops_namespace(namespace = nil)
-        if namespace.present?
-          @chatops_namespace = namespace
+      %w{namespace help error_response}.each do |setting|
+        method_name = "chatops_#{setting}".to_sym
+        variable_name = "@#{method_name}".to_sym
+        define_method method_name do |*args|
+          assignment = args.first
+          if assignment.present?
+            instance_variable_set variable_name, assignment
+          end
+          instance_variable_get variable_name.to_sym
         end
-        @chatops_namespace
-      end
-
-      def chatops_help(help = nil)
-        if help.present?
-          @chatops_help = help
-        end
-        @chatops_help
       end
 
       def chatops
