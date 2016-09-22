@@ -58,6 +58,7 @@ module ChatOps::Controller::TestCaseHelpers
       arg = command_string[last_index..-1]
       matches = arg.match(/ --(\S+)(.*)/)
       params[matches[1]] = matches[2].strip
+      params[matches[1]] = "true" unless params[matches[1]].present?
       command_string = command_string.slice(0, last_index)
     end
 
