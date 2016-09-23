@@ -227,6 +227,13 @@ describe ActionController::Base, type: :controller do
         expect(chatop_response).to eq "You can deploy foobar just fine."
       end
 
+      it "works with boolean arguments" do
+        chat "where can i deploy foobar --this-is-sparta", "bhuga"
+        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["user"]).to eq "bhuga"
+        expect(request.params["params"]["this-is-sparta"]).to eq "true"
+      end
+
       it "anchors regexes" do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
