@@ -8,6 +8,9 @@ test -d "/usr/share/rbenv/shims" && {
   export RBENV_VERSION="2.3.1"
 }
 
+# -f to not error missing versions
+rm -f Gemfile.lock Gemfile.rails5.lock
+
 # clean out the ruby environment
 export RUBYLIB=
 export RUBYOPT=
