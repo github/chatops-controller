@@ -51,7 +51,7 @@ describe ActionController::Base, type: :controller do
 
   def rails_flexible_post(path, outer_params, jsonrpc_params = nil)
     if Rails.version.starts_with?("4")
-      post path, outer_params, jsonrpc_params
+      post path, outer_params.merge("params" => jsonrpc_params)
     else
       jsonrpc_params ||= {}
       post path, :params => outer_params.merge("params" => jsonrpc_params)

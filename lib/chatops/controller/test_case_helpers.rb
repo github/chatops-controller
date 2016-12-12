@@ -11,12 +11,17 @@ module ChatOps::Controller::TestCaseHelpers
     user = args.delete :user
     room_id = args.delete :room_id
 
-    post method, params: {
+    params = {
       :method => method,
       :params => args,
       :room_id => room_id,
       :user => user,
     }
+
+    if Rails.version.slice(0).to_i >= 5
+      params = { params: params }
+    end
+    post method, params
   end
 
   def chat(message, user, room_id = "123")
