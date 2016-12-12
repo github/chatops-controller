@@ -89,7 +89,7 @@ module ChatOps
         Rack::Utils.secure_compare(ENV["CHATOPS_ALT_AUTH_TOKEN"], p)
       end
       unless authenticated
-        render :status => :forbidden, :text => "Not authorized"
+        render :status => :forbidden, :plain => "Not authorized"
       end
     end
 

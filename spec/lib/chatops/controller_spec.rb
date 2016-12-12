@@ -25,7 +25,7 @@ describe ActionController::Base, type: :controller do
 
     skip_before_action :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
-      render :text => "Why would you have something thats not a chatop?"
+      render :plain => "Why would you have something thats not a chatop?"
     end
 
     def unexcluded_chatop_method
@@ -47,6 +47,15 @@ describe ActionController::Base, type: :controller do
 
     ENV["CHATOPS_AUTH_TOKEN"] = "foo"
     ENV["CHATOPS_ALT_AUTH_TOKEN"] = "bar"
+  end
+
+  def rails_flexible_post(path, outer_params, jsonrpc_params = nil)
+    if Rails.version.starts_with?("4")
+      post path, outer_params, jsonrpc_params
+    else
+      jsonrpc_params ||= {}
+      post path, :params => outer_params.merge("params" => jsonrpc_params)
+    end
   end
 
   it "requires authentication" do
@@ -125,7 +134,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "returns method not found for a not found method" do
-      post :barfoo, :user => "foo"
+      rails_flexible_post :barfoo, :user => "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -151,7 +160,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "runs a known method" do
-      post :foobar, :user => "foo"
+      rails_flexible_post :foobar, :user => "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -161,7 +170,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "passes parameters to methods" do
-      post :wcid, :user => "foo", :params => { "app" => "foo" }
+      rails_flexible_post :wcid, { :user => "foo" }, { "app" => "foo" }
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -171,7 +180,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "uses typical controller fun like before_action" do
-      post :wcid, :user => "foo", :params => {}
+      rails_flexible_post :wcid, :user => "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -184,7 +193,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "allows methods to return invalid params with a message" do
-      post :wcid, :user => "foo", :params => { "app" => "nope" }
+      rails_flexible_post :wcid, { :user => "foo" }, { "app" => "nope" }
       expect(response.status).to eq 400
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
