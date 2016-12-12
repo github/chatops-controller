@@ -5,6 +5,7 @@ describe ActionController::Base, type: :controller do
     include ChatOps::Controller
     chatops_namespace :test
     chatops_help "ChatOps of and relating to testing"
+    chatops_error_response "Try checking haystack?"
 
     before_action :ensure_app_given, :only => [:wcid]
 
@@ -92,6 +93,7 @@ describe ActionController::Base, type: :controller do
       expect(json_response).to eq({
         "namespace" => "test",
         "help" => "ChatOps of and relating to testing",
+        "error_response" => "Try checking haystack?",
         "methods" => {
           "wcid" => {
             "help" => "where can i deploy?",
@@ -213,6 +215,23 @@ describe ActionController::Base, type: :controller do
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["app"]).to eq "foobar"
         expect(chatop_response).to eq "You can deploy foobar just fine."
+      end
+
+      it "works with generic arguments" do
+        chat "where can i deploy foobar --fruit apple --vegetable green celery", "bhuga"
+        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["user"]).to eq "bhuga"
+        expect(request.params["params"]["app"]).to eq "foobar"
+        expect(request.params["params"]["fruit"]).to eq "apple"
+        expect(request.params["params"]["vegetable"]).to eq "green celery"
+        expect(chatop_response).to eq "You can deploy foobar just fine."
+      end
+
+      it "works with boolean arguments" do
+        chat "where can i deploy foobar --this-is-sparta", "bhuga"
+        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["user"]).to eq "bhuga"
+        expect(request.params["params"]["this-is-sparta"]).to eq "true"
       end
 
       it "anchors regexes" do

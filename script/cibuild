@@ -13,4 +13,4 @@ export RUBYLIB=
 export RUBYOPT=
 
 script/bootstrap
-script/test
+script/test --format RspecJSONDumper::Formatter --format progress
