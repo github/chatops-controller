@@ -15,7 +15,8 @@ module ChatOps
         namespace: self.class.chatops_namespace,
         help: self.class.chatops_help,
         error_response: self.class.chatops_error_response,
-        methods: chatops }
+        methods: chatops,
+        version: "2" }
     end
 
     def process(*args)

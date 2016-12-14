@@ -116,7 +116,8 @@ describe ActionController::Base, type: :controller do
             "params" => [],
             "path" => "foobar"
           }
-        }
+        },
+        "version" => "2"
       })
     end
 
