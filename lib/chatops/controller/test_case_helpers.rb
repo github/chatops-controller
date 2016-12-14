@@ -12,16 +12,16 @@ module ChatOps::Controller::TestCaseHelpers
     room_id = args.delete :room_id
 
     params = {
-      :method => method,
       :params => args,
       :room_id => room_id,
-      :user => user,
+      :user => user
     }
 
     if Rails.version.slice(0).to_i >= 5
-      params = { params: params }
+      post :execute_chatop, params: params.merge(chatop: method)
+    else
+      post :execute_chatop, params.merge(chatop: method)
     end
-    post method, params
   end
 
   def chat(message, user, room_id = "123")

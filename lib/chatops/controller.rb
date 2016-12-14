@@ -24,9 +24,22 @@ module ChatOps
 
       scrubbed_params.each { |k, v| params[k] = v }
 
-      super
+      if params[:chatop].present?
+        params[:action] = params[:chatop]
+        args[0] = params[:action]
+        unless self.respond_to?(params[:chatop].to_sym)
+          raise AbstractController::ActionNotFound
+        end
+      end
+
+      super *args
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
+    end
+
+    def execute_chatop
+      # This needs to exist for route declarations, but we'll be overriding
+      # things in #process to make a method the action.
     end
 
     protected
