@@ -91,6 +91,8 @@ Add the tokens to your app's environment:
 $ gh-config CHATOPS_AUTH_TOKEN=abc CHATOPS_ALT_AUTH_TOKEN=abc myapp
 ```
 
+See [the protocol docs on authentication](https://github.com/github/hubot-classic/blob/master/docs/rpc_chatops_protocol.md#authentication) for more.
+
 ## Staging
 
 Use `.rpc set suffix https://myapp.githubapp.com/_chatops in staging`, and all
