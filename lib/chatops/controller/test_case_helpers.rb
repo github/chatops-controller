@@ -17,7 +17,8 @@ module ChatOps::Controller::TestCaseHelpers
       :user => user
     }
 
-    if Rails.version.slice(0).to_i >= 5
+    major_version = Rails.version.split('.')[0].to_i
+    if major_version >= 5
       post :execute_chatop, params: params.merge(chatop: method)
     else
       post :execute_chatop, params.merge(chatop: method)
