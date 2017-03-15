@@ -108,7 +108,7 @@ script/test
 
 Early versions of RPC chatops had two major changes:
 
-##### They used Rails' dynamic `:action` routing, which was depcrated in Rails 5.
+##### They used Rails' dynamic `:action` routing, which was deprecated in Rails 5.
 
 To work around this, you need to update your router boilerplate:
 
