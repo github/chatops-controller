@@ -107,7 +107,18 @@ module ChatOps
       rescue ArgumentError, TypeError
         return invalid_time
       end
-      signature = request.headers['X-Chatops-Signature']
+      signature_header = request.headers['X-Chatops-Signature']
+
+      begin
+        signature_items = signature_header.split(" ", 2)[1].split(",").map { |item| item.split("=", 2) }.to_h
+        signature = signature_items["signature"]
+      rescue NoMethodError
+      end
+
+      unless signature.present?
+        return render :status => :forbidden, :plain => "Failed to parse signature header"
+      end
+
       if url.present? && nonce.present? && timestamp.present? && signature.present?
         body = request.raw_post || ""
         signature_string = [url, nonce, timestamp, body].join("\n")

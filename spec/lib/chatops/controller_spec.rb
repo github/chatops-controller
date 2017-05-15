@@ -65,7 +65,6 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Timestamp'] = Time.now.utc.iso8601
     get :list
     expect(response.status).to eq 403
-    expect(response.body).to eq "Not authorized"
   end
 
   it "allows public key authentication for a GET request" do
@@ -76,7 +75,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.headers['X-Chatops-SignatureString']).to eq signature_string
     expect(response.status).to eq 200
@@ -96,7 +95,7 @@ describe ActionController::Base, type: :controller do
     @request.env["RAW_POST_DATA"] = body
     signature_string = "http://test.host/_chatops/foobar\n#{nonce}\n#{timestamp}\n#{body}"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
 
     major_version = Rails.version.split('.')[0].to_i
     if major_version >= 5
@@ -120,7 +119,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 200
     expect(response).to be_valid_json
@@ -134,7 +133,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     ENV.delete "CHATOPS_AUTH_BASE_URL"
     expect {
       get :list
@@ -149,7 +148,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     ENV.delete "CHATOPS_AUTH_PUBLIC_KEY"
     expect {
       get :list
@@ -166,7 +165,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
   end
@@ -179,7 +178,7 @@ describe ActionController::Base, type: :controller do
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['X-Chatops-Signature'] = signature
+    request.headers['X-Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
   end
