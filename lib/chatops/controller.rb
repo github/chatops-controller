@@ -110,7 +110,8 @@ module ChatOps
       signature = request.headers['X-Chatops-Signature']
       if url.present? && nonce.present? && timestamp.present? && signature.present?
         body = request.raw_post || ""
-        signature_string = [url, timestamp, nonce, body].join("\n")
+        signature_string = [url, nonce, timestamp, body].join("\n")
+        response.headers['X-Chatops-SignatureString'] = signature_string
         decoded_signature = Base64.decode64(signature)
         digest = OpenSSL::Digest::SHA256.new
         raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless ENV["CHATOPS_AUTH_PUBLIC_KEY"].present?

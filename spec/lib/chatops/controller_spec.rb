@@ -74,10 +74,11 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     get :list
+    expect(response.headers['X-Chatops-SignatureString']).to eq signature_string
     expect(response.status).to eq 200
     expect(response).to be_valid_json
   end
@@ -93,7 +94,7 @@ describe ActionController::Base, type: :controller do
     body = params.to_json
     @request.headers["Content-Type"] = 'application/json'
     @request.env["RAW_POST_DATA"] = body
-    signature_string = "http://test.host/_chatops/foobar\n#{timestamp}\n#{nonce}\n#{body}"
+    signature_string = "http://test.host/_chatops/foobar\n#{nonce}\n#{timestamp}\n#{body}"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
 
@@ -117,7 +118,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     get :list
@@ -131,7 +132,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     ENV.delete "CHATOPS_AUTH_BASE_URL"
@@ -146,7 +147,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     ENV.delete "CHATOPS_AUTH_PUBLIC_KEY"
@@ -163,7 +164,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     get :list
@@ -176,7 +177,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    signature_string = "http://test.host/_chatops\n#{timestamp}\n#{nonce}\n"
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
     get :list
