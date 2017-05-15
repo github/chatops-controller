@@ -1,5 +1,6 @@
 module ChatOps
   module Controller
+    class ConfigurationError < StandardError ; end
     extend ActiveSupport::Concern
 
     included do
@@ -72,21 +73,45 @@ module ChatOps
     end
 
     def ensure_chatops_authenticated
+      return true if Rails.env.test? && request.env["CHATOPS_TESTING_AUTH"]
       return true unless (chatop_names + [:list]).include?(params[:action].to_sym)
-      authenticated = authenticate_with_http_basic do |u, p|
-        if ENV["CHATOPS_AUTH_TOKEN"].nil?
-          raise StandardError, "Attempting to authenticate chatops with nil token"
-        end
-        if ENV["CHATOPS_ALT_AUTH_TOKEN"].nil?
-          raise StandardError, "Attempting to authenticate chatops with nil alternate token"
-        end
+      authenticated = false
 
-        Rack::Utils.secure_compare(ENV["CHATOPS_AUTH_TOKEN"], p) ||
-        Rack::Utils.secure_compare(ENV["CHATOPS_ALT_AUTH_TOKEN"], p)
+      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via CHATOPS_AUTH_BASE_URL") unless ENV["CHATOPS_AUTH_BASE_URL"].present?
+      url = ENV["CHATOPS_AUTH_BASE_URL"] + request.path
+      nonce = request.headers['X-Chatops-Nonce'] 
+      timestamp = request.headers['X-Chatops-Timestamp']
+      begin
+        time = Time.parse(timestamp)
+        if !(time > 1.minute.ago && time < 1.minute.from_now)
+          return invalid_time
+        end
+      rescue ArgumentError, TypeError
+        return invalid_time
+      end
+      signature = request.headers['X-Chatops-Signature']
+      if url.present? && nonce.present? && timestamp.present? && signature.present?
+        body = request.raw_post || ""
+        signature_string = [url, timestamp, nonce, body].join("\n")
+        decoded_signature = Base64.decode64(signature)
+        digest = OpenSSL::Digest::SHA256.new
+        raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless ENV["CHATOPS_AUTH_PUBLIC_KEY"].present?
+        if ENV["CHATOPS_AUTH_PUBLIC_KEY"].present?
+          public_key = OpenSSL::PKey::RSA.new(ENV["CHATOPS_AUTH_PUBLIC_KEY"])
+          authenticated = public_key.verify(digest, decoded_signature, signature_string)
+        end
+        if !authenticated && ENV["CHATOPS_AUTH_ALT_PUBLIC_KEY"].present?
+          public_key = OpenSSL::PKey::RSA.new(ENV["CHATOPS_AUTH_ALT_PUBLIC_KEY"])
+          authenticated = public_key.verify(digest, decoded_signature, signature_string)
+        end
       end
       unless authenticated
         render :status => :forbidden, :text => "Not authorized"
       end
+    end
+
+    def invalid_time
+      render :status => :forbidden, :text => "Invalid X-Chatops-Timestamp: #{request.headers['X-Chatops-Timestamp']}"
     end
 
     def ensure_method_exists

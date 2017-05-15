@@ -2,15 +2,19 @@ module ChatOps::Controller::TestCaseHelpers
 
   class NoMatchingCommandRegex < StandardError ; end
 
-  def chatops_auth!(user = "_", pass = ENV["CHATOPS_AUTH_TOKEN"])
-    request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(user, pass)
+  def chatops_auth!
+    request.env["CHATOPS_TESTING_AUTH"] = true
   end
 
   def chatop(method, params = {})
     args = params.dup.symbolize_keys
     user = args.delete :user
     room_id = args.delete :room_id
-    post method, :method => method, :room_id => room_id, :user => user, :params => args
+    params = { :method => method, :room_id => room_id, :user => user, :params => args }
+    json = params.to_json
+    @request.headers["Content-Type"] = 'application/json'
+    @request.env["RAW_POST_DATA"] = json
+    post method, params
   end
 
   def chat(message, user, room_id = "123")
