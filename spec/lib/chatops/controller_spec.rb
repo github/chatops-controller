@@ -9,7 +9,7 @@ describe ActionController::Base, type: :controller do
     chatops_help "ChatOps of and relating to testing"
     chatops_error_response "Try checking haystack?"
 
-    before_filter :ensure_app_given, :only => [:wcid]
+    before_action :ensure_app_given, :only => [:wcid]
 
     chatop :wcid,
     /(?:where can i deploy|wcid)(?: (?<app>\S+))?/,
@@ -25,9 +25,9 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success "You just foo and bar like it just don't matter"
     end
 
-    skip_before_filter :ensure_method_exists, only: :non_chatop_method
+    skip_before_action :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
-      render :text => "Why would you have something thats not a chatop?"
+      render :plain => "Why would you have something thats not a chatop?"
     end
 
     def unexcluded_chatop_method
@@ -42,7 +42,7 @@ describe ActionController::Base, type: :controller do
   before :each do
     routes.draw do
       get  "/_chatops" => "anonymous#list"
-      post  "/_chatops/:action", controller: "anonymous"
+      post  "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
       get  "/other" => "anonymous#non_chatop_method"
       get  "/other_will_fail" => "anonymous#unexcluded_chatop_method"
     end
@@ -50,6 +50,15 @@ describe ActionController::Base, type: :controller do
     @private_key = OpenSSL::PKey::RSA.new(2048)
     ENV["CHATOPS_AUTH_PUBLIC_KEY"] = @private_key.public_key.to_pem
     ENV["CHATOPS_AUTH_BASE_URL"] = "http://test.host"
+  end
+
+  def rails_flexible_post(path, outer_params, jsonrpc_params = nil)
+    if Rails.version.starts_with?("4")
+      post path, outer_params.merge("params" => jsonrpc_params)
+    else
+      jsonrpc_params ||= {}
+      post path, :params => outer_params.merge("params" => jsonrpc_params)
+    end
   end
 
   it "requires authentication" do
@@ -199,12 +208,13 @@ describe ActionController::Base, type: :controller do
             "params" => [],
             "path" => "foobar"
           }
-        }
+        },
+        "version" => "2"
       })
     end
 
     it "requires a user be sent to chatops" do
-      post :foobar
+      rails_flexible_post :execute_chatop, chatop: :foobar
       expect(response.status).to eq 400
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -217,7 +227,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "returns method not found for a not found method" do
-      post :barfoo, :user => "foo"
+      rails_flexible_post :execute_chatop, chatop: :barfoo, user: "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -229,7 +239,7 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 404
     end
 
-    it "requires skipping a before_filter to find non-chatop methods, sorry about that" do
+    it "requires skipping a before_action to find non-chatop methods, sorry about that" do
       get :unexcluded_chatop_method
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -243,7 +253,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "runs a known method" do
-      post :foobar, :user => "foo"
+      rails_flexible_post :execute_chatop, chatop: :foobar, user: "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -253,7 +263,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "passes parameters to methods" do
-      post :wcid, :user => "foo", :params => { "app" => "foo" }
+      rails_flexible_post :execute_chatop, { :chatop => "wcid", :user => "foo" }, { "app" => "foo" }
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -262,8 +272,8 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 200
     end
 
-    it "uses typical controller fun like before_filter" do
-      post :wcid, :user => "foo", :params => {}
+    it "uses typical controller fun like before_action" do
+      rails_flexible_post :execute_chatop, :chatop => "wcid", :user => "foo"
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
         "id" => nil,
@@ -276,7 +286,7 @@ describe ActionController::Base, type: :controller do
     end
 
     it "allows methods to return invalid params with a message" do
-      post :wcid, :user => "foo", :params => { "app" => "nope" }
+      rails_flexible_post :execute_chatop, { :chatop => "wcid", :user => "foo" }, { "app" => "nope" }
       expect(response.status).to eq 400
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -303,7 +313,8 @@ describe ActionController::Base, type: :controller do
     context "regex-based test helpers" do
       it "routes based on regexes from test helpers" do
         chat "where can i deploy foobar", "bhuga"
-        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "wcid"
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["app"]).to eq "foobar"
         expect(chatop_response).to eq "You can deploy foobar just fine."
@@ -311,7 +322,8 @@ describe ActionController::Base, type: :controller do
 
       it "works with generic arguments" do
         chat "where can i deploy foobar --fruit apple --vegetable green celery", "bhuga"
-        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "wcid"
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["app"]).to eq "foobar"
         expect(request.params["params"]["fruit"]).to eq "apple"
@@ -321,7 +333,8 @@ describe ActionController::Base, type: :controller do
 
       it "works with boolean arguments" do
         chat "where can i deploy foobar --this-is-sparta", "bhuga"
-        expect(request.params["action"]).to eq "wcid"
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "wcid"
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["this-is-sparta"]).to eq "true"
       end
