@@ -10,7 +10,19 @@ module ChatOps::Controller::TestCaseHelpers
     args = params.dup.symbolize_keys
     user = args.delete :user
     room_id = args.delete :room_id
-    post method, :method => method, :room_id => room_id, :user => user, :params => args
+
+    params = {
+      :params => args,
+      :room_id => room_id,
+      :user => user
+    }
+
+    major_version = Rails.version.split('.')[0].to_i
+    if major_version >= 5
+      post :execute_chatop, params: params.merge(chatop: method)
+    else
+      post :execute_chatop, params.merge(chatop: method)
+    end
   end
 
   def chat(message, user, room_id = "123")

@@ -1,6 +1,6 @@
 # ChatopsControllers
 
-Rails helpers for JSON-RPC based easy chatops.
+Rails helpers for easy, JSON-RPC based chatops.
 
 A minimal controller example:
 
@@ -22,7 +22,7 @@ Some routing boilerplate is required in `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  post "/_chatops/:action", controller: "chatops"
+  post "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
   get  "/_chatops" => "chatops#list"
 end
 ```
@@ -80,7 +80,7 @@ have an input validation or other handle-able error, you can use
 `jsonrpc_failure` to send a helpful error message.
 
 ChatOps are regular old rails controller actions, and you can use niceties like
-`before_filter` and friends. `before_filter :echo, :load_user` for the above
+`before_action` and friends. `before_action :echo, :load_user` for the above
 case would call `load_user` before running `echo`.
 
 ## Authentication
@@ -104,4 +104,65 @@ foo` and `.echo foo in staging` to use two different servers to run `.echo foo`.
 ```
 script/bootstrap
 script/test
+```
+
+## Upgrading from early versions
+
+Early versions of RPC chatops had two major changes:
+
+##### They used Rails' dynamic `:action` routing, which was deprecated in Rails 5.
+
+To work around this, you need to update your router boilerplate:
+
+This:
+
+```ruby
+  post  "/_chatops/:action", controller: "anonymous"
+```
+
+Becomes this:
+
+```ruby
+  post  "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
+```
+
+#####
+
+They did not require a prefix. Version 2 of the Chatops RPC protocol assumes a unique prefix for each endpoint. This decision was made for several reasons:
+
+ * The previous suffix-based system creates semantic ambiguities with keyword arguments
+ * Prefixes allow big improvements to `.help`
+ * Prefixes make regex-clobbering impossible
+
+To upgrade to version 2, upgrade to version 2.x of this gem. To migrate:
+
+ * Migrate your chatops to remove any prefixes you have:
+
+```ruby
+ chatop :foo, "help", /ci build whatever/, do "yay" end
+```
+
+Becomes:
+
+```ruby
+ chatop :foo, "help", /build whatever/, do "yay" end
+```
+
+ * Update your tests:
+
+```ruby
+  chat "ci build foobar"
+```
+
+Becomes:
+
+```ruby
+  chat "build foobar"
+```
+
+ * Remove and re-add your endpoint with a prefix:
+
+```
+.rpc delete https://my-endpoint.dev
+.rpc add https://my-endpoint.dev with prefix ci
 ```
