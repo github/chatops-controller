@@ -88,7 +88,7 @@ describe ActionController::Base, type: :controller do
     request.headers['X-Chatops-Nonce'] = nonce
     request.headers['X-Chatops-Timestamp'] = timestamp
     digest = OpenSSL::Digest::SHA256.new
-    params = { :method => "foobar", :room_id => "123", :user => "bhuga", :params => {}}
+    params = { :room_id => "123", :user => "bhuga", :params => {}}
 
     body = params.to_json
     @request.headers["Content-Type"] = 'application/json'
@@ -97,7 +97,13 @@ describe ActionController::Base, type: :controller do
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers['X-Chatops-Signature'] = signature
 
-    post :foobar, params
+    major_version = Rails.version.split('.')[0].to_i
+    if major_version >= 5
+      post :execute_chatop, params: params.merge(chatop: "foobar")
+    else
+      post :execute_chatop, params.merge(chatop: "foobar")
+    end
+
     expect(response.status).to eq 200
     expect(response).to be_valid_json
   end
