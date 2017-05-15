@@ -215,7 +215,7 @@ describe ActionController::Base, type: :controller do
             "path" => "foobar"
           }
         },
-        "version" => "2"
+        "version" => "3"
       })
     end
 

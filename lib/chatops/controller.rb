@@ -17,7 +17,7 @@ module ChatOps
         help: self.class.chatops_help,
         error_response: self.class.chatops_error_response,
         methods: chatops,
-        version: "2" }
+        version: "3" }
     end
 
     def process(*args)
