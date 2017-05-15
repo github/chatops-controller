@@ -129,7 +129,7 @@ module ChatOps
     end
 
     def invalid_time
-      render :status => :forbidden, :text => "Invalid X-Chatops-Timestamp: #{request.headers['X-Chatops-Timestamp']}"
+      render :status => :forbidden, :plain => "Invalid X-Chatops-Timestamp: #{request.headers['X-Chatops-Timestamp']}"
     end
 
     def ensure_method_exists
