@@ -97,8 +97,8 @@ module ChatOps
 
       raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via CHATOPS_AUTH_BASE_URL") unless ENV["CHATOPS_AUTH_BASE_URL"].present?
       url = ENV["CHATOPS_AUTH_BASE_URL"] + request.path
-      nonce = request.headers['X-Chatops-Nonce'] 
-      timestamp = request.headers['X-Chatops-Timestamp']
+      nonce = request.headers['Chatops-Nonce']
+      timestamp = request.headers['Chatops-Timestamp']
       begin
         time = Time.parse(timestamp)
         if !(time > 1.minute.ago && time < 1.minute.from_now)
@@ -107,7 +107,7 @@ module ChatOps
       rescue ArgumentError, TypeError
         return invalid_time
       end
-      signature_header = request.headers['X-Chatops-Signature']
+      signature_header = request.headers['Chatops-Signature']
 
       begin
         signature_items = signature_header.split(" ", 2)[1].split(",").map { |item| item.split("=", 2) }.to_h
@@ -122,7 +122,7 @@ module ChatOps
       if url.present? && nonce.present? && timestamp.present? && signature.present?
         body = request.raw_post || ""
         signature_string = [url, nonce, timestamp, body].join("\n")
-        response.headers['X-Chatops-SignatureString'] = signature_string
+        response.headers['Chatops-SignatureString'] = signature_string
         decoded_signature = Base64.decode64(signature)
         digest = OpenSSL::Digest::SHA256.new
         raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless ENV["CHATOPS_AUTH_PUBLIC_KEY"].present?
@@ -141,7 +141,7 @@ module ChatOps
     end
 
     def invalid_time
-      render :status => :forbidden, :plain => "Invalid X-Chatops-Timestamp: #{request.headers['X-Chatops-Timestamp']}"
+      render :status => :forbidden, :plain => "Invalid Chatops-Timestamp: #{request.headers['Chatops-Timestamp']}"
     end
 
     def ensure_method_exists
