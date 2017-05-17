@@ -1,14 +1,14 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
-require "chatops_controller/version"
+require "chatops/controller/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "chatops_controller"
+  s.name        = "chatops-controller"
   s.version     = ChatopsController::VERSION
   s.authors     = ["Ben Lavender"]
-  s.homepage    = "https://github.com/github/chatops_controller"
+  s.homepage    = "https://github.com/github/chatops-controller"
   s.email       = ["bhuga@github.com"]
   s.license     = "unknown - maybe we'll open source this?"
   s.summary     = %q{Rails helpers to create JSON-RPC chatops}
