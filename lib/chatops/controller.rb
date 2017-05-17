@@ -1,4 +1,4 @@
-require 'chatops'
+require "chatops"
 
 module ChatOps
   module Controller
@@ -102,7 +102,7 @@ module ChatOps
       body = request.raw_post || ""
       signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
       # We return this just to aid client debugging.
-      response.headers["Chatops-SignatureString"] = signature_string
+      response.headers["Chatops-Signature-String"] = signature_string
       raise ConfigurationError.new("You need to add a client's public key in .pem format via #{ChatOps.public_key_env_var_name}") unless ChatOps.public_key.present?
       if signature_valid?(ChatOps.public_key, @chatops_signature, signature_string) ||
           signature_valid?(ChatOps.alt_public_key, @chatops_signature, signature_string)
@@ -117,12 +117,12 @@ module ChatOps
     end
 
     def ensure_valid_chatops_nonce
-      @chatops_nonce = request.headers['Chatops-Nonce']
+      @chatops_nonce = request.headers["Chatops-Nonce"]
       return render :status => :forbidden, :plain => "A Chatops-Nonce header is required" unless @chatops_nonce.present?
     end
 
     def ensure_valid_chatops_signature
-      signature_header = request.headers['Chatops-Signature']
+      signature_header = request.headers["Chatops-Signature"]
 
       begin
         # "Chatops-Signature: Signature keyid=foo,signature=abc123" => { "keyid"" => "foo", "signature" => "abc123" }
@@ -139,7 +139,7 @@ module ChatOps
     end
 
     def ensure_valid_chatops_timestamp
-      @chatops_timestamp = request.headers['Chatops-Timestamp']
+      @chatops_timestamp = request.headers["Chatops-Timestamp"]
       time = Time.iso8601(@chatops_timestamp)
       if !(time > 1.minute.ago && time < 1.minute.from_now)
         return render :status => :forbidden, :plain => "Chatops timestamp not within 1 minute of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}"

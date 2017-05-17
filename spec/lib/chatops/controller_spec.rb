@@ -62,7 +62,7 @@ describe ActionController::Base, type: :controller do
   end
 
   it "requires authentication" do
-    request.headers['Chatops-Timestamp'] = Time.now.utc.iso8601
+    request.headers["Chatops-Timestamp"] = Time.now.utc.iso8601
     get :list
     expect(response.status).to eq 403
   end
@@ -70,14 +70,14 @@ describe ActionController::Base, type: :controller do
   it "allows public key authentication for a GET request" do
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
-    expect(response.headers['Chatops-SignatureString']).to eq signature_string
+    expect(response.headers["Chatops-Signature-String"]).to eq signature_string
     expect(response.status).to eq 200
     expect(response).to be_valid_json
   end
@@ -85,19 +85,19 @@ describe ActionController::Base, type: :controller do
   it "allows public key authentication for a POST request" do
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     params = { :room_id => "123", :user => "bhuga", :params => {}}
 
     body = params.to_json
-    @request.headers["Content-Type"] = 'application/json'
+    @request.headers["Content-Type"] = "application/json"
     @request.env["RAW_POST_DATA"] = body
     signature_string = "http://test.host/_chatops/foobar\n#{nonce}\n#{timestamp}\n#{body}"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
 
-    major_version = Rails.version.split('.')[0].to_i
+    major_version = Rails.version.split(".")[0].to_i
     if major_version >= 5
       post :execute_chatop, params: params.merge(chatop: "foobar")
     else
@@ -114,12 +114,12 @@ describe ActionController::Base, type: :controller do
     ENV["CHATOPS_AUTH_PUBLIC_KEY"] = other_key.public_key.to_pem
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 200
     expect(response).to be_valid_json
@@ -128,12 +128,12 @@ describe ActionController::Base, type: :controller do
   it "raises an error trying to auth without a base url" do
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     ENV.delete "CHATOPS_AUTH_BASE_URL"
     expect {
       get :list
@@ -143,12 +143,12 @@ describe ActionController::Base, type: :controller do
   it "raises an error trying to auth without a public key" do
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     ENV.delete "CHATOPS_AUTH_PUBLIC_KEY"
     expect {
       get :list
@@ -160,12 +160,12 @@ describe ActionController::Base, type: :controller do
     ENV["CHATOPS_AUTH_PUBLIC_KEY"] = other_key.public_key.to_pem
     nonce = SecureRandom.hex(20)
     timestamp = Time.now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
   end
@@ -173,12 +173,12 @@ describe ActionController::Base, type: :controller do
   it "doesn't allow requests more than 1 minute old" do
     nonce = SecureRandom.hex(20)
     timestamp = 2.minutes.ago.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
     expect(response.body).to include "Chatops timestamp not within 1 minute"
@@ -187,12 +187,12 @@ describe ActionController::Base, type: :controller do
   it "doesn't allow requests more than 1 minute in the future" do
     nonce = SecureRandom.hex(20)
     timestamp = 2.minutes.from_now.utc.iso8601
-    request.headers['Chatops-Nonce'] = nonce
-    request.headers['Chatops-Timestamp'] = timestamp
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
     digest = OpenSSL::Digest::SHA256.new
     signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
-    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
     expect(response.body).to include "Chatops timestamp not within 1 minute"
