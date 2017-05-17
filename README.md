@@ -162,3 +162,9 @@ Becomes:
 ```ruby
   chat "build foobar"
 ```
+
+##### Using public key authentication
+
+Previous versions used a `CHATOPS_ALT_AUTH_TOKEN` as a shared secret. This form
+of authentication was deprecated and the public key form used above is now
+used instead.
