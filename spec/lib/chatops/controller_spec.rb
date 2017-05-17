@@ -181,6 +181,21 @@ describe ActionController::Base, type: :controller do
     request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
+    expect(response.body).to include "Chatops timestamp not within 1 minute"
+  end
+
+  it "doesn't allow requests more than 1 minute in the future" do
+    nonce = SecureRandom.hex(20)
+    timestamp = 2.minutes.from_now.utc.iso8601
+    request.headers['Chatops-Nonce'] = nonce
+    request.headers['Chatops-Timestamp'] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers['Chatops-Signature'] = "Signature keyid=foo,signature=#{signature}"
+    get :list
+    expect(response.status).to eq 403
+    expect(response.body).to include "Chatops timestamp not within 1 minute"
   end
 
   it "does not add authentication to non-chatops routes" do
