@@ -3,7 +3,7 @@ require 'openssl'
 require 'base64'
 
 describe ActionController::Base, type: :controller do
- controller do
+  controller do
     include ChatOps::Controller
     chatops_namespace :test
     chatops_help "ChatOps of and relating to testing"
