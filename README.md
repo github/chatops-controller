@@ -5,8 +5,8 @@ Rails helpers for easy, JSON-RPC based chatops.
 A minimal controller example:
 
 ```ruby
-class ChatOpsController < ApplicationController
-  include ::ChatOps::Controller
+class ChatopsController < ApplicationController
+  include ::Chatops::Controller
 
   chatops_namespace :echo
 
@@ -79,7 +79,7 @@ You can return `jsonrpc_success` with a string to return text to chat. If you
 have an input validation or other handle-able error, you can use
 `jsonrpc_failure` to send a helpful error message.
 
-ChatOps are regular old rails controller actions, and you can use niceties like
+Chatops are regular old rails controller actions, and you can use niceties like
 `before_action` and friends. `before_action :echo, :load_user` for the above
 case would call `load_user` before running `echo`.
 

@@ -1,9 +1,9 @@
-module ChatOps::Controller::TestCaseHelpers
+module Chatops::Controller::TestCaseHelpers
 
   class NoMatchingCommandRegex < StandardError ; end
 
-  def chatops_auth!(user = "_", pass = ENV["CHATOPS_AUTH_TOKEN"])
-    request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(user, pass)
+  def chatops_auth!
+    request.env["CHATOPS_TESTING_AUTH"] = true
   end
 
   def chatop(method, params = {})

@@ -1,10 +1,12 @@
 require 'rails_helper'
+require 'openssl'
+require 'base64'
 
 describe ActionController::Base, type: :controller do
   controller do
-    include ChatOps::Controller
+    include Chatops::Controller
     chatops_namespace :test
-    chatops_help "ChatOps of and relating to testing"
+    chatops_help "Chatops of and relating to testing"
     chatops_error_response "Try checking haystack?"
 
     before_action :ensure_app_given, :only => [:wcid]
@@ -45,8 +47,9 @@ describe ActionController::Base, type: :controller do
       get  "/other_will_fail" => "anonymous#unexcluded_chatop_method"
     end
 
-    ENV["CHATOPS_AUTH_TOKEN"] = "foo"
-    ENV["CHATOPS_ALT_AUTH_TOKEN"] = "bar"
+    @private_key = OpenSSL::PKey::RSA.new(2048)
+    ENV["CHATOPS_AUTH_PUBLIC_KEY"] = @private_key.public_key.to_pem
+    ENV["CHATOPS_AUTH_BASE_URL"] = "http://test.host"
   end
 
   def rails_flexible_post(path, outer_params, jsonrpc_params = nil)
@@ -59,30 +62,140 @@ describe ActionController::Base, type: :controller do
   end
 
   it "requires authentication" do
+    request.headers["Chatops-Timestamp"] = Time.now.utc.iso8601
     get :list
     expect(response.status).to eq 403
-    expect(response.body).to eq "Not authorized"
   end
 
-  it "allows authentication" do
-    chatops_auth! "_", ENV["CHATOPS_AUTH_TOKEN"]
+  it "allows public key authentication for a GET request" do
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+    get :list
+    expect(response.headers["Chatops-Signature-String"]).to eq signature_string
+    expect(response.status).to eq 200
+    expect(response).to be_valid_json
+  end
+
+  it "allows public key authentication for a POST request" do
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    params = { :room_id => "123", :user => "bhuga", :params => {}}
+
+    body = params.to_json
+    @request.headers["Content-Type"] = "application/json"
+    @request.env["RAW_POST_DATA"] = body
+    signature_string = "http://test.host/_chatops/foobar\n#{nonce}\n#{timestamp}\n#{body}"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+
+    major_version = Rails.version.split(".")[0].to_i
+    if major_version >= 5
+      post :execute_chatop, params: params.merge(chatop: "foobar")
+    else
+      post :execute_chatop, params.merge(chatop: "foobar")
+    end
+
+    expect(response.status).to eq 200
+    expect(response).to be_valid_json
+  end
+
+  it "allows using a second public key to authenticate" do
+    ENV["CHATOPS_AUTH_ALT_PUBLIC_KEY"] = ENV["CHATOPS_AUTH_PUBLIC_KEY"]
+    other_key = OpenSSL::PKey::RSA.new(2048)
+    ENV["CHATOPS_AUTH_PUBLIC_KEY"] = other_key.public_key.to_pem
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 200
     expect(response).to be_valid_json
   end
 
-  it "allows authentication from a second token" do
-    chatops_auth! "_", ENV["CHATOPS_ALT_AUTH_TOKEN"]
-    get :list
-    expect(response.status).to eq 200
-    expect(response).to be_valid_json
+  it "raises an error trying to auth without a base url" do
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+    ENV.delete "CHATOPS_AUTH_BASE_URL"
+    expect {
+      get :list
+    }.to raise_error(Chatops::Controller::ConfigurationError)
   end
 
-  it "requires a correct password" do
-    chatops_auth! "_", "oogaboogawooga"
+  it "raises an error trying to auth without a public key" do
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+    ENV.delete "CHATOPS_AUTH_PUBLIC_KEY"
+    expect {
+      get :list
+    }.to raise_error(Chatops::Controller::ConfigurationError)
+  end
+
+  it "doesn't authenticate with the wrong public key'" do
+    other_key = OpenSSL::PKey::RSA.new(2048)
+    ENV["CHATOPS_AUTH_PUBLIC_KEY"] = other_key.public_key.to_pem
+    nonce = SecureRandom.hex(20)
+    timestamp = Time.now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
     expect(response.status).to eq 403
-    expect(response.body).to eq "Not authorized"
+  end
+
+  it "doesn't allow requests more than 1 minute old" do
+    nonce = SecureRandom.hex(20)
+    timestamp = 2.minutes.ago.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+    get :list
+    expect(response.status).to eq 403
+    expect(response.body).to include "Chatops timestamp not within 1 minute"
+  end
+
+  it "doesn't allow requests more than 1 minute in the future" do
+    nonce = SecureRandom.hex(20)
+    timestamp = 2.minutes.from_now.utc.iso8601
+    request.headers["Chatops-Nonce"] = nonce
+    request.headers["Chatops-Timestamp"] = timestamp
+    digest = OpenSSL::Digest::SHA256.new
+    signature_string = "http://test.host/_chatops\n#{nonce}\n#{timestamp}\n"
+    signature = Base64.encode64(@private_key.sign(digest, signature_string))
+    request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
+    get :list
+    expect(response.status).to eq 403
+    expect(response.body).to include "Chatops timestamp not within 1 minute"
   end
 
   it "does not add authentication to non-chatops routes" do
@@ -101,7 +214,7 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 200
       expect(json_response).to eq({
         "namespace" => "test",
-        "help" => "ChatOps of and relating to testing",
+        "help" => "Chatops of and relating to testing",
         "error_response" => "Try checking haystack?",
         "methods" => {
           "wcid" => {
@@ -117,7 +230,7 @@ describe ActionController::Base, type: :controller do
             "path" => "foobar"
           }
         },
-        "version" => "2"
+        "version" => "3"
       })
     end
 
@@ -250,7 +363,7 @@ describe ActionController::Base, type: :controller do
       it "anchors regexes" do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
-        }.to raise_error(ChatOps::Controller::TestCaseHelpers::NoMatchingCommandRegex)
+        }.to raise_error(Chatops::Controller::TestCaseHelpers::NoMatchingCommandRegex)
       end
     end
   end

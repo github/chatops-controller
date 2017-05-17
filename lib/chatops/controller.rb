@@ -1,9 +1,18 @@
-module ChatOps
+require "chatops"
+
+module Chatops
   module Controller
+    class ConfigurationError < StandardError ; end
     extend ActiveSupport::Concern
 
     included do
-      before_action :ensure_chatops_authenticated
+      with_options if: :should_authenticate_chatops? do |controller|
+        controller.before_action :ensure_valid_chatops_url
+        controller.before_action :ensure_valid_chatops_timestamp
+        controller.before_action :ensure_valid_chatops_signature
+        controller.before_action :ensure_valid_chatops_nonce
+        controller.before_action :ensure_chatops_authenticated
+      end
       before_action :ensure_user_given
       before_action :ensure_method_exists
     end
@@ -16,7 +25,7 @@ module ChatOps
         help: self.class.chatops_help,
         error_response: self.class.chatops_error_response,
         methods: chatops,
-        version: "2" }
+        version: "3" }
     end
 
     def process(*args)
@@ -90,21 +99,78 @@ module ChatOps
     end
 
     def ensure_chatops_authenticated
-      return true unless (chatop_names + [:list]).include?(params[:action].to_sym)
-      authenticated = authenticate_with_http_basic do |u, p|
-        if ENV["CHATOPS_AUTH_TOKEN"].nil?
-          raise StandardError, "Attempting to authenticate chatops with nil token"
-        end
-        if ENV["CHATOPS_ALT_AUTH_TOKEN"].nil?
-          raise StandardError, "Attempting to authenticate chatops with nil alternate token"
-        end
+      body = request.raw_post || ""
+      signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
+      # We return this just to aid client debugging.
+      response.headers["Chatops-Signature-String"] = signature_string
+      raise ConfigurationError.new("You need to add a client's public key in .pem format via #{Chatops.public_key_env_var_name}") unless Chatops.public_key.present?
+      if signature_valid?(Chatops.public_key, @chatops_signature, signature_string) ||
+          signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
+          return true
+      end
+      return render :status => :forbidden, :plain => "Not authorized"
+    end
 
-        Rack::Utils.secure_compare(ENV["CHATOPS_AUTH_TOKEN"], p) ||
-        Rack::Utils.secure_compare(ENV["CHATOPS_ALT_AUTH_TOKEN"], p)
+    def ensure_valid_chatops_url
+      unless Chatops.auth_base_url.present?
+        raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{Chatops.auth_base_url_env_var_name}")
       end
-      unless authenticated
-        render :status => :forbidden, :plain => "Not authorized"
+      if Chatops.auth_base_url[-1] == "/"
+        raise ConfigurationError.new("Don't include a trailing slash in #{Chatops.auth_base_url_env_var_name}; the rails path will be appended and it must match exactly.")
       end
+      @chatops_url = Chatops.auth_base_url + request.path
+    end
+
+    def ensure_valid_chatops_nonce
+      @chatops_nonce = request.headers["Chatops-Nonce"]
+      return render :status => :forbidden, :plain => "A Chatops-Nonce header is required" unless @chatops_nonce.present?
+    end
+
+    def ensure_valid_chatops_signature
+      signature_header = request.headers["Chatops-Signature"]
+
+      begin
+        # "Chatops-Signature: Signature keyid=foo,signature=abc123" => { "keyid"" => "foo", "signature" => "abc123" }
+        signature_items = signature_header.split(" ", 2)[1].split(",").map { |item| item.split("=", 2) }.to_h
+        @chatops_signature = signature_items["signature"]
+      rescue NoMethodError
+        # The signature header munging, if something's amiss, can produce a `nil` that raises a
+        # no method error. We'll just carry on; the nil signature will raise below
+      end
+
+      unless @chatops_signature.present?
+        return render :status => :forbidden, :plain => "Failed to parse signature header"
+      end
+    end
+
+    def ensure_valid_chatops_timestamp
+      @chatops_timestamp = request.headers["Chatops-Timestamp"]
+      time = Time.iso8601(@chatops_timestamp)
+      if !(time > 1.minute.ago && time < 1.minute.from_now)
+        return render :status => :forbidden, :plain => "Chatops timestamp not within 1 minute of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}"
+      end
+    rescue ArgumentError, TypeError
+        # time parsing or missing can raise these
+      return render :status => :forbidden, :plain => "Invalid Chatops-Timestamp: #{@chatops_timestamp}"
+    end
+
+    def request_is_chatop?
+      (chatop_names + [:list]).include?(params[:action].to_sym)
+    end
+
+    def chatops_test_auth?
+      Rails.env.test? && request.env["CHATOPS_TESTING_AUTH"]
+    end
+
+    def should_authenticate_chatops?
+      request_is_chatop? && !chatops_test_auth?
+    end
+
+    def signature_valid?(key_string, signature, signature_string)
+      digest = OpenSSL::Digest::SHA256.new
+      decoded_signature = Base64.decode64(signature)
+      public_key = OpenSSL::PKey::RSA.new(key_string)
+      public_key.verify(digest, decoded_signature, signature_string)
     end
 
     def ensure_method_exists

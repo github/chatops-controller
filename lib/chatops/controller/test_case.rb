@@ -1,5 +1,5 @@
 require "chatops/controller/test_case_helpers"
 
-class ChatOps::Controller::TestCase < ActionController::TestCase
-  include ChatOps::Controller::TestCaseHelpers
+class Chatops::Controller::TestCase < ActionController::TestCase
+  include Chatops::Controller::TestCaseHelpers
 end
