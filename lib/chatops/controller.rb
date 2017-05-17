@@ -102,8 +102,8 @@ module ChatOps
       body = request.raw_post || ""
       signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
       # We return this just to aid client debugging.
-      response.headers['Chatops-SignatureString'] = signature_string
-      raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless ChatOps.public_key.present?
+      response.headers["Chatops-SignatureString"] = signature_string
+      raise ConfigurationError.new("You need to add a client's public key in .pem format via #{ChatOps.public_key_env_var_name}") unless ChatOps.public_key.present?
       if signature_valid?(ChatOps.public_key, @chatops_signature, signature_string) ||
           signature_valid?(ChatOps.alt_public_key, @chatops_signature, signature_string)
           return true
@@ -112,7 +112,7 @@ module ChatOps
     end
 
     def ensure_valid_chatops_url
-      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via CHATOPS_AUTH_BASE_URL") unless ChatOps.auth_base_url.present?
+      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{ChatOps.auth_base_url_env_var_name}") unless ChatOps.auth_base_url.present?
       @chatops_url = ChatOps.auth_base_url + request.path
     end
 
