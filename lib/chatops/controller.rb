@@ -112,7 +112,12 @@ module ChatOps
     end
 
     def ensure_valid_chatops_url
-      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{ChatOps.auth_base_url_env_var_name}") unless ChatOps.auth_base_url.present?
+      unless ChatOps.auth_base_url.present?
+        raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{ChatOps.auth_base_url_env_var_name}")
+      end
+      if ChatOps.auth_base_url[-1] == "/"
+        raise ConfigurationError.new("Don't include a trailing slash in #{ChatOps.auth_base_url_env_var_name}; the rails path will be appended and it must match exactly.")
+      end
       @chatops_url = ChatOps.auth_base_url + request.path
     end
 
