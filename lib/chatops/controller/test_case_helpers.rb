@@ -1,4 +1,4 @@
-module ChatOps::Controller::TestCaseHelpers
+module Chatops::Controller::TestCaseHelpers
 
   class NoMatchingCommandRegex < StandardError ; end
 

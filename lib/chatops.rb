@@ -1,4 +1,4 @@
-module ChatOps
+module Chatops
   def self.public_key
     ENV[public_key_env_var_name]
   end

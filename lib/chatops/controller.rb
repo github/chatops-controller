@@ -1,6 +1,6 @@
 require "chatops"
 
-module ChatOps
+module Chatops
   module Controller
     class ConfigurationError < StandardError ; end
     extend ActiveSupport::Concern
@@ -103,22 +103,22 @@ module ChatOps
       signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
       # We return this just to aid client debugging.
       response.headers["Chatops-Signature-String"] = signature_string
-      raise ConfigurationError.new("You need to add a client's public key in .pem format via #{ChatOps.public_key_env_var_name}") unless ChatOps.public_key.present?
-      if signature_valid?(ChatOps.public_key, @chatops_signature, signature_string) ||
-          signature_valid?(ChatOps.alt_public_key, @chatops_signature, signature_string)
+      raise ConfigurationError.new("You need to add a client's public key in .pem format via #{Chatops.public_key_env_var_name}") unless Chatops.public_key.present?
+      if signature_valid?(Chatops.public_key, @chatops_signature, signature_string) ||
+          signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
           return true
       end
       return render :status => :forbidden, :plain => "Not authorized"
     end
 
     def ensure_valid_chatops_url
-      unless ChatOps.auth_base_url.present?
-        raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{ChatOps.auth_base_url_env_var_name}")
+      unless Chatops.auth_base_url.present?
+        raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{Chatops.auth_base_url_env_var_name}")
       end
-      if ChatOps.auth_base_url[-1] == "/"
-        raise ConfigurationError.new("Don't include a trailing slash in #{ChatOps.auth_base_url_env_var_name}; the rails path will be appended and it must match exactly.")
+      if Chatops.auth_base_url[-1] == "/"
+        raise ConfigurationError.new("Don't include a trailing slash in #{Chatops.auth_base_url_env_var_name}; the rails path will be appended and it must match exactly.")
       end
-      @chatops_url = ChatOps.auth_base_url + request.path
+      @chatops_url = Chatops.auth_base_url + request.path
     end
 
     def ensure_valid_chatops_nonce

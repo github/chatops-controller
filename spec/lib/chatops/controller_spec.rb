@@ -4,9 +4,9 @@ require 'base64'
 
 describe ActionController::Base, type: :controller do
   controller do
-    include ChatOps::Controller
+    include Chatops::Controller
     chatops_namespace :test
-    chatops_help "ChatOps of and relating to testing"
+    chatops_help "Chatops of and relating to testing"
     chatops_error_response "Try checking haystack?"
 
     before_action :ensure_app_given, :only => [:wcid]
@@ -137,7 +137,7 @@ describe ActionController::Base, type: :controller do
     ENV.delete "CHATOPS_AUTH_BASE_URL"
     expect {
       get :list
-    }.to raise_error(ChatOps::Controller::ConfigurationError)
+    }.to raise_error(Chatops::Controller::ConfigurationError)
   end
 
   it "raises an error trying to auth without a public key" do
@@ -152,7 +152,7 @@ describe ActionController::Base, type: :controller do
     ENV.delete "CHATOPS_AUTH_PUBLIC_KEY"
     expect {
       get :list
-    }.to raise_error(ChatOps::Controller::ConfigurationError)
+    }.to raise_error(Chatops::Controller::ConfigurationError)
   end
 
   it "doesn't authenticate with the wrong public key'" do
@@ -214,7 +214,7 @@ describe ActionController::Base, type: :controller do
       expect(response.status).to eq 200
       expect(json_response).to eq({
         "namespace" => "test",
-        "help" => "ChatOps of and relating to testing",
+        "help" => "Chatops of and relating to testing",
         "error_response" => "Try checking haystack?",
         "methods" => {
           "wcid" => {
@@ -363,7 +363,7 @@ describe ActionController::Base, type: :controller do
       it "anchors regexes" do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
-        }.to raise_error(ChatOps::Controller::TestCaseHelpers::NoMatchingCommandRegex)
+        }.to raise_error(Chatops::Controller::TestCaseHelpers::NoMatchingCommandRegex)
       end
     end
   end
