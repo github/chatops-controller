@@ -1,3 +1,5 @@
+require 'chatops'
+
 module ChatOps
   module Controller
     class ConfigurationError < StandardError ; end
@@ -99,22 +101,19 @@ module ChatOps
     def ensure_chatops_authenticated
       body = request.raw_post || ""
       signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
-      # We return this just url client debugging.
+      # We return this just to aid client debugging.
       response.headers['Chatops-SignatureString'] = signature_string
-      public_key = ENV["CHATOPS_AUTH_PUBLIC_KEY"]
-      alt_public_key = ENV["CHATOPS_AUTH_ALT_PUBLIC_KEY"]
-      raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless public_key.present?
-      if signature_valid?(public_key, @chatops_signature, signature_string) ||
-          signature_valid?(alt_public_key, @chatops_signature, signature_string)
+      raise ConfigurationError.new("You need to add a client's public key in .pem format via CHATOPS_AUTH_PUBLIC_KEY") unless ChatOps.public_key.present?
+      if signature_valid?(ChatOps.public_key, @chatops_signature, signature_string) ||
+          signature_valid?(ChatOps.alt_public_key, @chatops_signature, signature_string)
           return true
       end
       return render :status => :forbidden, :plain => "Not authorized"
     end
 
     def ensure_valid_chatops_url
-      base_url = ENV["CHATOPS_AUTH_BASE_URL"]
-      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via CHATOPS_AUTH_BASE_URL") unless base_url.present?
-      @chatops_url = base_url + request.path
+      raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via CHATOPS_AUTH_BASE_URL") unless ChatOps.auth_base_url.present?
+      @chatops_url = ChatOps.auth_base_url + request.path
     end
 
     def ensure_valid_chatops_nonce
