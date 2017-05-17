@@ -6,12 +6,12 @@ module Chatops
     extend ActiveSupport::Concern
 
     included do
-      with_options if: :should_authenticate_chatops? do
-        before_action :ensure_valid_chatops_url
-        before_action :ensure_valid_chatops_timestamp
-        before_action :ensure_valid_chatops_signature
-        before_action :ensure_valid_chatops_nonce
-        before_action :ensure_chatops_authenticated
+      with_options if: :should_authenticate_chatops? do |controller|
+        controller.before_action :ensure_valid_chatops_url
+        controller.before_action :ensure_valid_chatops_timestamp
+        controller.before_action :ensure_valid_chatops_signature
+        controller.before_action :ensure_valid_chatops_nonce
+        controller.before_action :ensure_chatops_authenticated
       end
       before_action :ensure_user_given
       before_action :ensure_method_exists
