@@ -124,6 +124,7 @@ module ChatOps
       signature_header = request.headers['Chatops-Signature']
 
       begin
+        # 'Chatops-Signatre: Signature keyid=foo,signature=abc123' => { "keyid"" => "foo", "signature" => "abc123" }
         signature_items = signature_header.split(" ", 2)[1].split(",").map { |item| item.split("=", 2) }.to_h
         @chatops_signature = signature_items["signature"]
       rescue NoMethodError
