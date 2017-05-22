@@ -167,6 +167,7 @@ module Chatops
     end
 
     def signature_valid?(key_string, signature, signature_string)
+      return false unless key_string.present?
       digest = OpenSSL::Digest::SHA256.new
       decoded_signature = Base64.decode64(signature)
       public_key = OpenSSL::PKey::RSA.new(key_string)
