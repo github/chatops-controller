@@ -77,7 +77,7 @@ describe ActionController::Base, type: :controller do
     signature = Base64.encode64(@private_key.sign(digest, signature_string))
     request.headers["Chatops-Signature"] = "Signature keyid=foo,signature=#{signature}"
     get :list
-    expect(response.headers["Chatops-Signature-String"]).to eq signature_string
+    expect(response.headers["Chatops-Signature-String"]).to eq Base64.strict_encode64(signature_string)
     expect(response.status).to eq 200
     expect(response).to be_valid_json
   end
