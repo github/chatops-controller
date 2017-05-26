@@ -6,6 +6,16 @@ module Chatops::Controller::TestCaseHelpers
     request.env["CHATOPS_TESTING_AUTH"] = true
   end
 
+  def chatops_prefix(prefix = nil)
+    # We abuse request.env here so that rails will cycle this with each test.
+    # If we used an instance variable, one would always need to be resetting
+    # it.
+    if prefix
+      request.env["CHATOPS_TESTING_PREFIX"] = prefix
+    end
+    request.env["CHATOPS_TESTING_PREFIX"]
+  end
+
   def chatop(method, params = {})
     args = params.dup.symbolize_keys
     user = args.delete :user
@@ -31,7 +41,8 @@ module Chatops::Controller::TestCaseHelpers
     matchers = json_response["methods"].map { |name, metadata|
       metadata = metadata.dup
       metadata["name"] = name
-      metadata["regex"] = Regexp.new("^#{metadata["regex"]}$", "i")
+      prefix = chatops_prefix ? "#{chatops_prefix} " : ""
+      metadata["regex"] = Regexp.new("^#{prefix}#{metadata["regex"]}$", "i")
       metadata
     }
 
