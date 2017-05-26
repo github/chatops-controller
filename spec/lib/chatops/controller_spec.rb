@@ -365,6 +365,12 @@ describe ActionController::Base, type: :controller do
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
         }.to raise_error(Chatops::Controller::TestCaseHelpers::NoMatchingCommandRegex)
       end
+
+      it "allows setting a v2 prefix" do
+        chatops_prefix "test-prefix"
+        chat "test-prefix where can i deploy foobar --this-is-sparta", "bhuga"
+        expect(request.params["chatop"]).to eq "wcid"
+      end
     end
   end
 end
