@@ -1,4 +1,4 @@
-# ChatopsControllers
+# Chatops Controller
 
 Rails helpers for easy, JSON-RPC based chatops.
 
@@ -29,12 +29,6 @@ end
 
 Before you deploy, add the RPC authentication tokens to your app's environment,
 below.
-
-Next, tell hubot about your endpoint:
-
-```
-.rpc add https://myapp.githubapp.com/_chatops
-```
 
 You're all done. Try `.echo foo`, and you should see Hubot respond with `Echoing back to you: foo`.
 
@@ -72,7 +66,7 @@ in chat for `.help echo`.
 The DSL takes a block, which is the code that will run when the chat robot sees
 this regex. Arguments will be available in the `params` hash. `params[:user]`
 and `params[:room_id]` are special, and will be set by hubot. `user` will always
-be the github login of the user typing the command, and `room_id` will be where
+be the login of the user typing the command, and `room_id` will be where
 it was typed.
 
 You can return `jsonrpc_success` with a string to return text to chat. If you
@@ -85,17 +79,26 @@ case would call `load_user` before running `echo`.
 
 ## Authentication
 
-Add the tokens to your app's environment:
+Authentication uses the Chatops v3 public key signing protocol. You'll need
+two environment variables to use this protocol:
 
-```shell
-$ gh-config CHATOPS_AUTH_TOKEN=abc CHATOPS_ALT_AUTH_TOKEN=abc myapp
-```
+`CHATOPS_AUTH_PUBLIC_KEY` is the public key of your chatops client in PEM
+format. This environment variable will contain newlines.
 
-See [the protocol docs on authentication](https://github.com/github/hubot-classic/blob/master/docs/rpc_chatops_protocol.md#authentication) for more.
+`CHATOPS_AUTH_BASE_URL` is the base URL of your server as the chatops client
+sees it. This is specified as an environment variable since rails will trust
+client headers about forwarded host. For example, if your chatops client has
+added the url `https://example.com/_chatops`, you'd set this to
+`https://example.com`.
+
+You can also set `CHATOPS_AUTH_ALT_PUBLIC_KEY` to a second public key which
+will be accepted. This is helpful when rolling keys.
+
+TODO: link to protocol docs.
 
 ## Staging
 
-Use `.rpc set suffix https://myapp.githubapp.com/_chatops in staging`, and all
+Use `.rpc set suffix https://myapp.example.com/_chatops in staging`, and all
 your chatops will require the suffix `in staging`. This means you can do `.echo
 foo` and `.echo foo in staging` to use two different servers to run `.echo foo`.
 
@@ -110,7 +113,7 @@ script/test
 
 Early versions of RPC chatops had two major changes:
 
-##### They used Rails' dynamic `:action` routing, which was deprecated in Rails 5.
+##### Using Rails' dynamic `:action` routing, which was deprecated in Rails 5.
 
 To work around this, you need to update your router boilerplate:
 
@@ -126,9 +129,9 @@ Becomes this:
   post  "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
 ```
 
-#####
+##### Adding a prefix
 
-They did not require a prefix. Version 2 of the Chatops RPC protocol assumes a unique prefix for each endpoint. This decision was made for several reasons:
+Version 2 of the Chatops RPC protocol assumes a unique prefix for each endpoint. This decision was made for several reasons:
 
  * The previous suffix-based system creates semantic ambiguities with keyword arguments
  * Prefixes allow big improvements to `.help`
@@ -160,9 +163,8 @@ Becomes:
   chat "build foobar"
 ```
 
- * Remove and re-add your endpoint with a prefix:
+##### Using public key authentication
 
-```
-.rpc delete https://my-endpoint.dev
-.rpc add https://my-endpoint.dev with prefix ci
-```
+Previous versions used a `CHATOPS_ALT_AUTH_TOKEN` as a shared secret. This form
+of authentication was deprecated and the public key form used above is now
+used instead.
