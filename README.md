@@ -53,7 +53,7 @@ You're all done. Try `.echo foo`, and you should see your client respond with
 `Echoing back to you: foo`.
 
 A hubot client implementation is available at
-<https://github.com/github/hubot-chatops-rpc>
+<https://github.com/hubot-scripts/hubot-chatops-rpc>
 
 ## Usage
 
