@@ -2,7 +2,8 @@
 
 CRPC is a client-server protocol; Hubot is a client. Servers expose an endpoint
 listing available methods. Each endpoint provides a regex to fire on and a
-relative URL path to execute it.
+relative URL path to execute it. CRPC is distilled from several years'
+experience with Chatops; see [the why](why.md) for some background.
 
 Chatops RPC pushes a lot of complexity to clients. This is a design decision,
 intended to keep the burden of creating new chat commands in existing systems
