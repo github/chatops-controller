@@ -48,8 +48,11 @@ end
 Before you deploy, add the RPC authentication tokens to your app's environment,
 below.
 
-You're all done. Try `.echo foo`, and you should see Hubot respond with `Echoing
-back to you: foo`.
+You're all done. Try `.echo foo`, and you should see your client respond with
+`Echoing back to you: foo`.
+
+A hubot client implementation is available at
+<https://github.com/github/hubot-chatops-rpc>
 
 ## Usage
 
