@@ -33,6 +33,7 @@ It's easy to test:
 
 ```
 class MyControllerTestCase < ActionController::TestCase
+  include Chatops::Controller::TestCaseHelpers
   before do
     chatops_prefix "echo"
     chatops_auth!
