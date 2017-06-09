@@ -31,3 +31,15 @@ Here are a few things you can do that will increase the likelihood of your pull 
 - [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 - [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
 - [GitHub Help](https://help.github.com)
+
+## Releasing
+
+If you are the current maintainer of this gem:
+
+ * Create a branch for the release: `git checkout -b cut-release-vxx.xx.xx`
+ * Ensure that tests are green: `script/test`
+ * Bump gem version in `lib/chatops/controller/version.rb`
+ * Make a PR to github/chatops-controller and merge it
+ * Build a local gem: `gem build chatops-controller.gemspec`
+ * Tag and push: `git tag vx.xx.xx; git push --tags`
+ * Push to rubygems.org -- `gem push chatops-controller-x.x.x.gem`
