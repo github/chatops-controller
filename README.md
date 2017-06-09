@@ -126,10 +126,14 @@ with a problem, please report it in an issue.
 
 ## Development
 
+Changes are welcome. Getting started:
+
 ```
 script/bootstrap
 script/test
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution instructions.
 
 ## Upgrading from early versions
 
