@@ -118,6 +118,11 @@ has added the url `https://example.com/_chatops`, you'd set this to
 You can also optionally set `CHATOPS_AUTH_ALT_PUBLIC_KEY` to a second public key
 which will be accepted. This is helpful when rolling keys.
 
+## Rails compatibility
+
+This gem is intended to work with rails 4.x and 5.x. If you find a version
+with a problem, please report it in an issue.
+
 ## Development
 
 ```
