@@ -1,6 +1,7 @@
 # Chatops Controller
 
-Rails helpers for easy, JSON-RPC based chatops.
+Rails helpers for easy and well-tested Chatops RPC. See the [protocol docs](docs/protocol-description.md)
+for background information on Chatops RPC.
 
 A minimal controller example:
 
@@ -8,11 +9,12 @@ A minimal controller example:
 class ChatopsController < ApplicationController
   include ::Chatops::Controller
 
+  # The default chatops RPC prefix. Clients may replace this.
   chatops_namespace :echo
 
   chatop :echo,
-  /echo (?<text>.*)?/,
-  "echo <text> - Echo some text back" do
+  /(?<text>.*)?/,
+  "<text> - Echo some text back" do
     jsonrpc_success "Echoing back to you: #{jsonrpc_params[:text]}"
   end
 end
@@ -27,30 +29,48 @@ Rails.application.routes.draw do
 end
 ```
 
+It's easy to test:
+
+```
+class MyControllerTestCase < ActionController::TestCase
+  before do
+    chatops_prefix "echo"
+    chatops_auth!
+  end
+
+  def test_it_works
+    chat "echo foo bar baz"
+    assert_equal "foo bar baz", chatop_response
+  end
+end
+```
+
 Before you deploy, add the RPC authentication tokens to your app's environment,
 below.
 
-You're all done. Try `.echo foo`, and you should see Hubot respond with `Echoing back to you: foo`.
+You're all done. Try `.echo foo`, and you should see Hubot respond with `Echoing
+back to you: foo`.
 
 ## Usage
 
 #### Namespaces
 
 Every chatops controller has a namespace. All commands associated with this
-controller will be displayed with `.help <namespace>`. Commands will also be
-dispalyed with subsets of their text.
+controller will be displayed with `.<namespace>` in chat. The namespace is a
+default chatops RPC prefix and may be overridden by a client.
 
 ```
 chatops_namespace :foo
 ```
+
 #### Creating Chatops
 
 Creating a chatop is a DSL:
 
 ```ruby
 chatop :echo,
-/echo (?<text>.*)?/,
-"echo <text> - Echo some text back" do
+/(?<text>.*)?/,
+"<text> - Echo some text back" do
   jsonrpc_success "Echoing back to you: #{jsonrpc_params[:text]}"
 end
 ```
@@ -61,12 +81,12 @@ captures](http://ruby-doc.org/core-1.9.3/Regexp.html#method-i-named_captures).
 In this example, only one capture group is available, `text`.
 
 The next line is a string, which is a single line of help that will be displayed
-in chat for `.help echo`.
+in chat for `.echo`.
 
 The DSL takes a block, which is the code that will run when the chat robot sees
 this regex. Arguments will be available in the `params` hash. `params[:user]`
-and `params[:room_id]` are special, and will be set by hubot. `user` will always
-be the login of the user typing the command, and `room_id` will be where
+and `params[:room_id]` are special, and will be set by the client. `user` will
+always be the login of the user typing the command, and `room_id` will be where
 it was typed.
 
 You can return `jsonrpc_success` with a string to return text to chat. If you
@@ -83,24 +103,17 @@ Authentication uses the Chatops v3 public key signing protocol. You'll need
 two environment variables to use this protocol:
 
 `CHATOPS_AUTH_PUBLIC_KEY` is the public key of your chatops client in PEM
-format. This environment variable will contain newlines.
+format. This environment variable will be the contents of a `.pub` file,
+newlines and all.
 
 `CHATOPS_AUTH_BASE_URL` is the base URL of your server as the chatops client
 sees it. This is specified as an environment variable since rails will trust
-client headers about forwarded host. For example, if your chatops client has
-added the url `https://example.com/_chatops`, you'd set this to
+client headers about a forwarded hostname. For example, if your chatops client
+has added the url `https://example.com/_chatops`, you'd set this to
 `https://example.com`.
 
-You can also set `CHATOPS_AUTH_ALT_PUBLIC_KEY` to a second public key which
-will be accepted. This is helpful when rolling keys.
-
-TODO: link to protocol docs.
-
-## Staging
-
-Use `.rpc set suffix https://myapp.example.com/_chatops in staging`, and all
-your chatops will require the suffix `in staging`. This means you can do `.echo
-foo` and `.echo foo in staging` to use two different servers to run `.echo foo`.
+You can also optionally set `CHATOPS_AUTH_ALT_PUBLIC_KEY` to a second public key
+which will be accepted. This is helpful when rolling keys.
 
 ## Development
 
@@ -161,6 +174,9 @@ Becomes:
 
 ```ruby
   chat "build foobar"
+  # or
+  chatops_prefix "ci"
+  chat "ci build foobar"
 ```
 
 ##### Using public key authentication
