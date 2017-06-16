@@ -197,3 +197,7 @@ Becomes:
 Previous versions used a `CHATOPS_ALT_AUTH_TOKEN` as a shared secret. This form
 of authentication was deprecated and the public key form used above is now
 used instead.
+
+### License
+
+MIT. See the accompanying LICENSE file.
