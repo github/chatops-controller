@@ -113,7 +113,7 @@ Accept: application/json
 Content-type: application/json
 Content-length: 77
 
-{"user":"bhuga","method":"wcid","params":{"app": "hubot"},"room_id":"developer-experience"}
+{"user":"bhuga","method":"options","params":{"app": "hubot"},"room_id":"developer-experience"}
 ```
 
 The CRPC server should respond with output like the following:
