@@ -169,7 +169,7 @@ The string to be signed is:
 For a request with the same headers and a POST body of `{"method": "foo"}`, the
 string to be signed is:
 
-`https://example.com/_chatops\nabc123.2017-05-11T19:15:23Z\n{"method": "foo"}`
+`https://example.com/_chatops\nabc123\n2017-05-11T19:15:23Z\n{"method": "foo"}`
 
 The signature header starts with the word `Signature`, followed by whitespace,
 followed by comma-separated key-value pairs separated by an `=`. Each
