@@ -31,7 +31,7 @@ end
 
 It's easy to test:
 
-```
+```ruby
 class MyControllerTestCase < ActionController::TestCase
   include Chatops::Controller::TestCaseHelpers
   before do
