@@ -1,5 +1,0 @@
-#!/bin/sh
-#!/bin/sh
-
-export BUNDLE_GEMFILE="./Gemfile.rails5"
-script/cibuild
