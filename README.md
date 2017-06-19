@@ -24,7 +24,8 @@ Some routing boilerplate is required in `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  post "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
+  # Replace the controller: argument with your controller's name
+  post "/_chatops/:chatop", controller: "chatops", action: :execute_chatop
   get  "/_chatops" => "chatops#list"
 end
 ```
@@ -146,13 +147,13 @@ To work around this, you need to update your router boilerplate:
 This:
 
 ```ruby
-  post  "/_chatops/:action", controller: "anonymous"
+  post  "/_chatops/:action", controller: "chatops"
 ```
 
 Becomes this:
 
 ```ruby
-  post  "/_chatops/:chatop", controller: "anonymous", action: :execute_chatop
+  post  "/_chatops/:chatop", controller: "chatops" action: :execute_chatop
 ```
 
 ##### Adding a prefix
