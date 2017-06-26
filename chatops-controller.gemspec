@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.email       = ["opensource+chatops-controller@github.com"]
   s.license     = "MIT"
   s.summary     = %q{Rails helpers to create JSON-RPC chatops}
-  s.description = %q{See the README for documentation"}
+  s.description = %q{See the README for documentation}
 
   s.files = Dir["{app,config,db,lib}/**/*", "README.md"]
   s.test_files = Dir["spec/**/*"]
