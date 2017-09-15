@@ -93,6 +93,9 @@ this regex. Arguments will be available in the `params` hash. `params[:user]`
 and `params[:room_id]` are special, and will be set by the client. `user` will
 always be the login of the user typing the command, and `room_id` will be where
 it was typed.
+The optional `mention_slug` parameter will provide the name to use to refer to
+the user when sending a message; this may or may not be the same thing as the
+username, depending on the chat system being used.
 
 You can return `jsonrpc_success` with a string to return text to chat. If you
 have an input validation or other handle-able error, you can use
