@@ -43,6 +43,7 @@ chat message matches a command's regex matcher, the CRPC client creates a method
 invocation. A method invocation is a JSON object with the following fields:
 
  * `user`: A slug username corresponding to to the command giver's GitHub login.
+ * `mention_slug`: Optional. If provided, a string which should be used to mention the user when sending a message in response. For example, Slack requires that users be mentioned using user IDs instead of usernames.
  * `room_id`: A slug room name where the command originated.
  * `method`: The method name, without namespace, of the matching regex.
  * `params`: A mapping of parameter names to matches extracted from named capture groups in the command's regex. Parameters that are empty or null should not be passed.
