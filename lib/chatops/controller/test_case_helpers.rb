@@ -20,11 +20,13 @@ module Chatops::Controller::TestCaseHelpers
     args = params.dup.symbolize_keys
     user = args.delete :user
     room_id = args.delete :room_id
+    mention_slug = args.delete :mention_slug
 
     params = {
       :params => args,
       :room_id => room_id,
-      :user => user
+      :user => user,
+      :mention_slug => mention_slug,
     }
 
     major_version = Rails.version.split('.')[0].to_i
@@ -57,7 +59,7 @@ module Chatops::Controller::TestCaseHelpers
     matcher["params"].each do |param|
       jsonrpc_params[param] = match_data[param.to_sym]
     end
-    jsonrpc_params.merge!(user: user, room_id: room_id)
+    jsonrpc_params.merge!(user: user, room_id: room_id, mention_slug: user)
     chatop matcher["name"].to_sym, jsonrpc_params
   end
 
