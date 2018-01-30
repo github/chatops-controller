@@ -31,6 +31,11 @@ module Chatops
         :user, :mention_slug, :method, :controller, :action, :params, :room_id)
 
       scrubbed_params.each { |k, v| params[k] = v }
+      # As of Rails 5, values we expected to be nil may end up
+      # being empty strings instead
+      if params[:params].present?
+        params["params"].reject! { |k, v| v == "" }
+      end
 
       if params[:chatop].present?
         params[:action] = params[:chatop]

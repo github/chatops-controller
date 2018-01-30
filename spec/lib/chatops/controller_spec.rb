@@ -371,6 +371,11 @@ describe ActionController::Base, type: :controller do
         chat "test-prefix where can i deploy foobar --this-is-sparta", "bhuga"
         expect(request.params["chatop"]).to eq "wcid"
       end
+
+      it "ensures unprovided arguments are nil" do
+        chat "where can i deploy", "bhuga"
+        expect(controller.send(:params)["params"]["app"]).to be_nil
+      end
     end
   end
 end
