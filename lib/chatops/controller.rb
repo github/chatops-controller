@@ -56,6 +56,8 @@ module Chatops
       params["params"] || {}
     end
 
+    # `options` supports any of the optional fields documented
+    # in the [protocol](../../docs/protocol-description.md).
     def jsonrpc_success(message, options: {})
       response = { :result => message.to_s }
       # do not allow options to override message
