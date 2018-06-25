@@ -56,8 +56,11 @@ module Chatops
       params["params"] || {}
     end
 
-    def jsonrpc_success(message)
-      jsonrpc_response :result => message.to_s
+    def jsonrpc_success(message, options: {})
+      response = { :result => message.to_s }
+      # do not allow options to override message
+      options.delete(:result)
+      jsonrpc_response response.merge(options)
     end
     alias_method :chatop_send, :jsonrpc_success
 
