@@ -70,6 +70,7 @@ but it is important that `result` be sufficient on its own.
     * `image_url`: An image URL to display as the button, will generally take precedence
     * `command`: The command to use when the button is clicked
  * `image_url`: An image URL to be included with the response
+ * `attachment`: Optional boolean which hints the recipient to format the message as an attachment, if supported by its protocol. Because this is a hint, it may be ignored by clients. If not specified, it defaults to false.
 
 CRPC may also produce error JSON according to the JSON-RPC spec, consisting of
 an object containing an `error` object with a `message` string. This is
