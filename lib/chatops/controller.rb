@@ -91,7 +91,7 @@ module Chatops
     def jsonrpc_response(hash, http_status = nil)
       http_status ||= 200
       render :status => http_status,
-             :json => { :jsonrpc => "2.0",
+             :json => { :jsonrpc => "3.0",
                         :id      => params[:id] }.merge(hash)
     end
 

@@ -238,7 +238,7 @@ describe ActionController::Base, type: :controller do
       rails_flexible_post :execute_chatop, chatop: :foobar
       expect(response.status).to eq 400
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "error" => {
           "code" => -32602,
@@ -250,7 +250,7 @@ describe ActionController::Base, type: :controller do
     it "returns method not found for a not found method" do
       rails_flexible_post :execute_chatop, chatop: :barfoo, user: "foo"
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "error" => {
           "code" => -32601,
@@ -263,7 +263,7 @@ describe ActionController::Base, type: :controller do
     it "requires skipping a before_action to find non-chatop methods, sorry about that" do
       get :unexcluded_chatop_method
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "error" => {
           "code" => -32601,
@@ -276,7 +276,7 @@ describe ActionController::Base, type: :controller do
     it "runs a known method" do
       rails_flexible_post :execute_chatop, chatop: :foobar, user: "foo"
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "result" => "You just foo and bar like it just don't matter"
       })
@@ -286,7 +286,7 @@ describe ActionController::Base, type: :controller do
     it "passes parameters to methods" do
       rails_flexible_post :execute_chatop, { :chatop => "wcid", :user => "foo" }, { "app" => "foo" }
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "result" => "You can deploy foo just fine."
       })
@@ -296,7 +296,7 @@ describe ActionController::Base, type: :controller do
     it "uses typical controller fun like before_action" do
       rails_flexible_post :execute_chatop, :chatop => "wcid", :user => "foo"
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "error" => {
           "code" => -32602,
@@ -310,7 +310,7 @@ describe ActionController::Base, type: :controller do
       rails_flexible_post :execute_chatop, { :chatop => "wcid", :user => "foo" }, { "app" => "nope" }
       expect(response.status).to eq 400
       expect(json_response).to eq({
-        "jsonrpc" => "2.0",
+        "jsonrpc" => "3.0",
         "id" => nil,
         "error" => {
           "code" => -32602,
