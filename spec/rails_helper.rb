@@ -28,7 +28,7 @@ require 'chatops/controller/rspec'
 # Checks for pending migration and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 
-Dir[Rails.root.join "spec/support/**/*.rb"].each {|f| require f}
+Dir[File.expand_path("../../spec/support/**/*.rb", __FILE__)].each {|f| require f}
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
