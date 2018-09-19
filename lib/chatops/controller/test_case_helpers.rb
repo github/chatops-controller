@@ -50,7 +50,7 @@ module Chatops::Controller::TestCaseHelpers
 
     named_params, command = extract_named_params(message)
 
-    matcher = matchers.find { |matcher| matcher["regex"].match(command) }
+    matcher = matchers.find { |m| m["regex"].match(command) }
 
     raise NoMatchingCommandRegex.new("No command matches '#{command}'") unless matcher
 
