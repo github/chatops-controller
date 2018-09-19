@@ -50,6 +50,11 @@ module Chatops
     protected
 
     def setup_params
+      json_body.each do |key, value|
+        next if params.has_key? key
+        params[key] = value
+      end
+
       permitted_params = %i[
         action
         chatop
@@ -74,6 +79,14 @@ module Chatops
       end
 
       self.params = params.permit(*permitted_params)
+    end
+
+    def json_body
+      hash = {}
+      if request.content_type =~ %r/\Aapplication\/json\Z/i
+        hash = GitHub::JSON.parse(request.raw_post) || {}
+      end
+      hash.with_indifferent_access
     end
 
     def jsonrpc_params
