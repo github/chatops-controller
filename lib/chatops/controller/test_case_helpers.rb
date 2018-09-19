@@ -57,7 +57,7 @@ module Chatops::Controller::TestCaseHelpers
     match_data = matcher["regex"].match(command)
     jsonrpc_params = named_params.dup
     matcher["params"].each do |param|
-      jsonrpc_params[param] = match_data[param.to_sym]
+      jsonrpc_params[param] ||= match_data[param.to_sym]
     end
     jsonrpc_params.merge!(user: user, room_id: room_id, mention_slug: user)
     chatop matcher["name"].to_sym, jsonrpc_params
