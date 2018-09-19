@@ -27,6 +27,8 @@ module Chatops
     end
 
     def process(*args)
+      setup_params
+
       if params[:chatop].present?
         params[:action] = params[:chatop]
         args[0] = params[:action]
@@ -46,6 +48,33 @@ module Chatops
     end
 
     protected
+
+    def setup_params
+      permitted_params = %i[
+        action
+        chatop
+        controller
+        mention_slug
+        method
+        room_id
+        user
+      ]
+
+      chatop_name =
+        if params[:chatop].present?
+          params[:chatop].to_sym
+        elsif params[:action].present?
+          params[:action].to_sym
+        else
+          nil
+        end
+
+      if chatop = self.class.chatops[chatop_name]
+        permitted_params << { params: chatop[:params] }
+      end
+
+      self.params = params.permit(*permitted_params)
+    end
 
     def jsonrpc_params
       params["params"] || {}
