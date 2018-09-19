@@ -27,11 +27,6 @@ module Chatops
     end
 
     def process(*args)
-      scrubbed_params = jsonrpc_params.except(
-        :user, :mention_slug, :method, :controller, :action, :params, :room_id)
-
-      scrubbed_params.each { |k, v| params[k] = v }
-
       if params[:chatop].present?
         params[:action] = params[:chatop]
         args[0] = params[:action]
