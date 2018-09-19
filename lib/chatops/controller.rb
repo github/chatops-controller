@@ -40,7 +40,7 @@ module Chatops
         end
       end
 
-      super *args
+      super(*args)
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
     end
