@@ -27,7 +27,7 @@ module Chatops
     end
 
     def process(*args)
-      setup_params
+      setup_params!
 
       if params[:chatop].present?
         params[:action] = params[:chatop]
@@ -49,7 +49,7 @@ module Chatops
 
     protected
 
-    def setup_params
+    def setup_params!
       json_body.each do |key, value|
         next if params.has_key? key
         params[key] = value
@@ -65,8 +65,7 @@ module Chatops
         user
       ]
 
-      chatop_name =
-        if params[:chatop].present?
+      chatop_name = if params[:chatop].present?
           params[:chatop].to_sym
         elsif params[:action].present?
           params[:action].to_sym
