@@ -55,41 +55,21 @@ module Chatops
         params[key] = value
       end
 
-      permitted_params = %i[
-        action
-        chatop
-        controller
-        mention_slug
-        method
-        room_id
-        user
-      ]
+      @jsonrpc_params = params.delete(:params) if params.has_key? :params
 
-      chatop_name = if params[:chatop].present?
-          params[:chatop].to_sym
-        elsif params[:action].present?
-          params[:action].to_sym
-        else
-          nil
-        end
+      self.params = params.permit(:action, :chatop, :controller, :id, :mention_slug, :method, :room_id, :user)
+    end
 
-      if chatop = self.class.chatops[chatop_name]
-        permitted_params << { params: chatop[:params] }
-      end
-
-      self.params = params.permit(*permitted_params)
+    def jsonrpc_params
+      @jsonrpc_params ||= ActionController::Parameters.new
     end
 
     def json_body
       hash = {}
       if request.content_type =~ %r/\Aapplication\/json\Z/i
-        hash = GitHub::JSON.parse(request.raw_post) || {}
+        hash = ActiveSupport::JSON.decode(request.raw_post) || {}
       end
       hash.with_indifferent_access
-    end
-
-    def jsonrpc_params
-      params["params"] || {}
     end
 
     # `options` supports any of the optional fields documented
