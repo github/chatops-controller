@@ -14,8 +14,8 @@ describe ActionController::Base, type: :controller do
     chatop :wcid,
     /(?:where can i deploy|wcid)(?: (?<app>\S+))?/,
     "where can i deploy?" do
-      return jsonrpc_invalid_params("I need nope, sorry") if params[:app] == "nope"
-      jsonrpc_success "You can deploy #{params["app"]} just fine."
+      return jsonrpc_invalid_params("I need nope, sorry") if jsonrpc_params[:app] == "nope"
+      jsonrpc_success "You can deploy #{jsonrpc_params["app"]} just fine."
     end
 
     chatop :foobar,
@@ -35,7 +35,7 @@ describe ActionController::Base, type: :controller do
     end
 
     def ensure_app_given
-      return jsonrpc_invalid_params("I need an app, every time") unless params[:app].present?
+      return jsonrpc_invalid_params("I need an app, every time") unless jsonrpc_params[:app].present?
     end
   end
 

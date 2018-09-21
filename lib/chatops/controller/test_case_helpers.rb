@@ -50,14 +50,14 @@ module Chatops::Controller::TestCaseHelpers
 
     named_params, command = extract_named_params(message)
 
-    matcher = matchers.find { |matcher| matcher["regex"].match(command) }
+    matcher = matchers.find { |m| m["regex"].match(command) }
 
     raise NoMatchingCommandRegex.new("No command matches '#{command}'") unless matcher
 
     match_data = matcher["regex"].match(command)
     jsonrpc_params = named_params.dup
     matcher["params"].each do |param|
-      jsonrpc_params[param] = match_data[param.to_sym]
+      jsonrpc_params[param] ||= match_data[param.to_sym]
     end
     jsonrpc_params.merge!(user: user, room_id: room_id, mention_slug: user)
     chatop matcher["name"].to_sym, jsonrpc_params

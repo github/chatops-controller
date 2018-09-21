@@ -27,10 +27,7 @@ module Chatops
     end
 
     def process(*args)
-      scrubbed_params = jsonrpc_params.except(
-        :user, :mention_slug, :method, :controller, :action, :params, :room_id)
-
-      scrubbed_params.each { |k, v| params[k] = v }
+      setup_params!
 
       if params[:chatop].present?
         params[:action] = params[:chatop]
@@ -40,7 +37,7 @@ module Chatops
         end
       end
 
-      super *args
+      super(*args)
     rescue AbstractController::ActionNotFound
       return jsonrpc_method_not_found
     end
@@ -52,8 +49,27 @@ module Chatops
 
     protected
 
+    def setup_params!
+      json_body.each do |key, value|
+        next if params.has_key? key
+        params[key] = value
+      end
+
+      @jsonrpc_params = params.delete(:params) if params.has_key? :params
+
+      self.params = params.permit(:action, :chatop, :controller, :id, :mention_slug, :method, :room_id, :user)
+    end
+
     def jsonrpc_params
-      params["params"] || {}
+      @jsonrpc_params ||= ActionController::Parameters.new
+    end
+
+    def json_body
+      hash = {}
+      if request.content_type =~ %r/\Aapplication\/json\Z/i
+        hash = ActiveSupport::JSON.decode(request.raw_post) || {}
+      end
+      hash.with_indifferent_access
     end
 
     # `options` supports any of the optional fields documented
