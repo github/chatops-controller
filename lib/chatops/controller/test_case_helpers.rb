@@ -79,9 +79,9 @@ module Chatops::Controller::TestCaseHelpers
   def extract_named_params(command_string)
     params = {}
 
-    while last_index = command_string.rindex(" --")
+    while last_index = command_string.rindex(/ --?/)
       arg = command_string[last_index..-1]
-      matches = arg.match(/ --(\S+)(.*)/)
+      matches = arg.match(/ --?(\S+)(.*)/)
       params[matches[1]] = matches[2].strip
       params[matches[1]] = "true" unless params[matches[1]].present?
       command_string = command_string.slice(0, last_index)
