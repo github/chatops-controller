@@ -342,22 +342,24 @@ describe ActionController::Base, type: :controller do
       end
 
       it "works with generic arguments" do
-        chat "where can i deploy foobar --fruit apple --vegetable green celery", "bhuga"
+        chat "where can i deploy foobar --fruit apple --vegetable green celery -v", "bhuga"
         expect(request.params["action"]).to eq "execute_chatop"
         expect(request.params["chatop"]).to eq "wcid"
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["app"]).to eq "foobar"
         expect(request.params["params"]["fruit"]).to eq "apple"
         expect(request.params["params"]["vegetable"]).to eq "green celery"
+        expect(request.params["params"]["v"]).to eq "true"
         expect(chatop_response).to eq "You can deploy foobar just fine."
       end
 
       it "works with boolean arguments" do
-        chat "where can i deploy foobar --this-is-sparta", "bhuga"
+        chat "where can i deploy foobar --this-is-sparta -s", "bhuga"
         expect(request.params["action"]).to eq "execute_chatop"
         expect(request.params["chatop"]).to eq "wcid"
         expect(request.params["user"]).to eq "bhuga"
         expect(request.params["params"]["this-is-sparta"]).to eq "true"
+        expect(request.params["params"]["s"]).to eq "true"
       end
 
       it "anchors regexes" do
