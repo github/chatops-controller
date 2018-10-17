@@ -25,6 +25,13 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success "You just foo and bar like it just don't matter"
     end
 
+    chatop :proxy_parameters,
+    /(?:proxy_parameters)/,
+    "proxy parameters back to test" do
+      response = { :params => params, :jsonrpc_params => jsonrpc_params }.to_json
+      jsonrpc_success response
+    end
+
     skip_before_action :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
       render :plain => "Why would you have something thats not a chatop?"
@@ -228,6 +235,12 @@ describe ActionController::Base, type: :controller do
             "regex" => /(?:how can i foo and bar all at once)?/.source,
             "params" => [],
             "path" => "foobar"
+          },
+          "proxy_parameters" => {
+            "help" => "proxy parameters back to test",
+            "regex" => /(?:proxy_parameters)/.source,
+            "params" => [],
+            "path" => "proxy_parameters"
           }
         },
         "version" => "3"
@@ -292,6 +305,26 @@ describe ActionController::Base, type: :controller do
       })
       expect(response.status).to eq 200
     end
+
+    it "passes all expected paramters" do
+      rails_flexible_post :execute_chatop, {
+        :chatop => "proxy_parameters",
+        :user => "foo",
+        :mention_slug => "mention_slug_here",
+        :message_id => "message_id_here",
+        :room_id => "#someroom",
+        :unknown_key => "few" # This should get ignored
+      }, {
+       "app" => "foo" 
+      }
+      expect(json_response).to eq({
+        "jsonrpc" => "2.0",
+        "id" => nil,
+        "result" => "{\"params\":{\"action\":\"proxy_parameters\",\"chatop\":\"proxy_parameters\",\"controller\":\"anonymous\",\"mention_slug\":\"mention_slug_here\",\"message_id\":\"message_id_here\",\"room_id\":\"#someroom\",\"user\":\"foo\"},\"jsonrpc_params\":{\"app\":\"foo\"}}"
+      })
+      expect(response.status).to eq 200
+    end 
+
 
     it "uses typical controller fun like before_action" do
       rails_flexible_post :execute_chatop, :chatop => "wcid", :user => "foo"
