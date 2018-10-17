@@ -57,7 +57,7 @@ module Chatops
 
       @jsonrpc_params = params.delete(:params) if params.has_key? :params
 
-      self.params = params.permit(:action, :chatop, :controller, :id, :mention_slug, :method, :room_id, :user)
+      self.params = params.permit(:action, :chatop, :controller, :id, :mention_slug, :message_id, :method, :room_id, :user)
     end
 
     def jsonrpc_params
