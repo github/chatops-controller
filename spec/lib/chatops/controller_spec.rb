@@ -393,6 +393,15 @@ describe ActionController::Base, type: :controller do
         expect(request.params["params"]["this-is-sparta"]).to eq "true"
       end
 
+      it "sends along all the parameters" do
+        chat "where can i deploy foobar", "my_username", "room_id_5", "message_id_6"
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "wcid"
+        expect(request.params["user"]).to eq "my_username"
+        expect(request.params["room_id"]).to eq "room_id_5"
+        expect(request.params["message_id"]).to eq "message_id_6"
+      end
+
       it "anchors regexes" do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
