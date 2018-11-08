@@ -127,7 +127,7 @@ module Chatops
           signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
           return true
       end
-      return render :status => :forbidden, :plain => "Not authorized"
+      return jsonrpc_error(-32800, 403, "Not authorized")
     end
 
     def ensure_valid_chatops_url
@@ -142,7 +142,7 @@ module Chatops
 
     def ensure_valid_chatops_nonce
       @chatops_nonce = request.headers["Chatops-Nonce"]
-      return render :status => :forbidden, :plain => "A Chatops-Nonce header is required" unless @chatops_nonce.present?
+      return jsonrpc_error(-32801, 403, "A Chatops-Nonce header is required") unless @chatops_nonce.present?
     end
 
     def ensure_valid_chatops_signature
@@ -158,7 +158,7 @@ module Chatops
       end
 
       unless @chatops_signature.present?
-        return render :status => :forbidden, :plain => "Failed to parse signature header"
+        return jsonrpc_error(-32802, 403, "Failed to parse signature header")
       end
     end
 
@@ -166,11 +166,11 @@ module Chatops
       @chatops_timestamp = request.headers["Chatops-Timestamp"]
       time = Time.iso8601(@chatops_timestamp)
       if !(time > 1.minute.ago && time < 1.minute.from_now)
-        return render :status => :forbidden, :plain => "Chatops timestamp not within 1 minute of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}"
+        return jsonrpc_error(-32803, 403, "Chatops timestamp not within 1 minute of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}")
       end
     rescue ArgumentError, TypeError
-        # time parsing or missing can raise these
-      return render :status => :forbidden, :plain => "Invalid Chatops-Timestamp: #{@chatops_timestamp}"
+      # time parsing or missing can raise these
+      return jsonrpc_error(-32804, 403, "Invalid Chatops-Timestamp: #{@chatops_timestamp}")
     end
 
     def request_is_chatop?
