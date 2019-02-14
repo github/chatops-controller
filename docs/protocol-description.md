@@ -242,3 +242,6 @@ they should not be pushed to the server.
 
 The version of the ChatopsRPC protocol in use by a server is given as the
 `version` field. If no version is returned, `3` is assumed.
+
+### Development & Testing
+To test your CRPC service end-to-end locally with Hubot, clone the [hubot-classic](https://github.com/github/hubot-classic) repo and follow the instructions [here](https://github.com/github/hubot-classic#rpc-chatops) to add your RPC endpoint. For example `/rpc add http://localhost:8080/_chatops --prefix mychatops`. Then you can run your chatops command with `/mychatops`.
