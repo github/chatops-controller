@@ -32,6 +32,14 @@ describe ActionController::Base, type: :controller do
       jsonrpc_success response
     end
 
+    chatop :sort,
+    /sort\s+```\n(?<lines>.+)\n```/,
+    "sort lines" do
+      sorted_lines = jsonrpc_params[:lines].lines.map(&:chomp).sort
+      sorted_lines.prepend("```").append("```")
+      jsonrpc_success sorted_lines.join("\n")
+    end
+
     skip_before_action :ensure_method_exists, only: :non_chatop_method
     def non_chatop_method
       render :plain => "Why would you have something thats not a chatop?"
@@ -241,7 +249,13 @@ describe ActionController::Base, type: :controller do
             "regex" => /(?:proxy_parameters)/.source,
             "params" => [],
             "path" => "proxy_parameters"
-          }
+          },
+          "sort" => {
+            "help" => "sort lines",
+            "regex" => /sort\s+```\n(?<lines>.+)\n```/.source,
+            "params" => ["lines"],
+            "path" => "sort"
+          },
         },
         "version" => "3"
       })
@@ -406,6 +420,23 @@ describe ActionController::Base, type: :controller do
         expect {
           chat "too bad that this message doesn't start with where can i deploy foobar", "bhuga"
         }.to raise_error(Chatops::Controller::TestCaseHelpers::NoMatchingCommandRegex)
+      end
+
+      it "supports multiline patterns" do
+        chat <<~MSG, "laserlemon"
+          sort
+          ```
+          foo
+          bar
+          baz
+          ```
+          MSG
+
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "sort"
+        expect(request.params["user"]).to eq "laserlemon"
+        expect(request.params["params"]["lines"]).to eq "foo\nbar\nbaz"
+        expect(chatop_response).to eq "```\nbar\nbaz\nfoo\n```"
       end
 
       it "allows setting a v2 prefix" do
