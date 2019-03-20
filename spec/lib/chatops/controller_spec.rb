@@ -439,6 +439,15 @@ describe ActionController::Base, type: :controller do
         expect(chatop_response).to eq "```\nbar\nbaz\nfoo\n```"
       end
 
+      it "matches patterns case-insensitively" do
+        chat "WCID foo", "laserlemon"
+        expect(request.params["action"]).to eq "execute_chatop"
+        expect(request.params["chatop"]).to eq "wcid"
+        expect(request.params["user"]).to eq "laserlemon"
+        expect(request.params["params"]["app"]).to eq "foo"
+        expect(chatop_response).to eq "You can deploy foo just fine."
+      end
+
       it "allows setting a v2 prefix" do
         chatops_prefix "test-prefix"
         chat "test-prefix where can i deploy foobar --this-is-sparta", "bhuga"
