@@ -92,7 +92,7 @@ Accept: application/json
  "namespace": "deploy",
  "help": null,
  "version": 3,
- "error_response": "The server had an unexpected error. More information is perhaps available in the [error tracker](https://example.com)"
+ "error_response": "The server had an unexpected error. More information is perhaps available in the [error tracker](https://example.com)",
  "methods": {
    "options": {
      "help": "hubot deploy options <app> - List available environments for <app>",
