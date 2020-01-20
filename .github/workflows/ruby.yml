@@ -16,5 +16,5 @@ jobs:
     - name: Build and test
       run: |
         gem install bundler:1.16.1
-        bundle install
+        bundle install --binstubs
         bin/rspec
