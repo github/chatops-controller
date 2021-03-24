@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 4.0'
+gem 'rails'
 
 group :development, :test do
   gem "rspec-rails", "~> 3"

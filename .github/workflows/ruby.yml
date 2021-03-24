@@ -9,12 +9,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Ruby 2.5.7
+    - name: Set up Ruby 2.7.2
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.5.7
+        ruby-version: 2.7.2
     - name: Build and test
       run: |
-        gem install bundler:1.16.1
         bundle install --binstubs
         bin/rspec
