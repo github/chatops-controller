@@ -66,7 +66,7 @@ module Chatops
 
     def json_body
       hash = {}
-      if request.content_type =~ %r/\Aapplication\/json\Z/i
+      if request.content_mime_type == Mime[:json]
         hash = ActiveSupport::JSON.decode(request.raw_post) || {}
       end
       hash.with_indifferent_access
