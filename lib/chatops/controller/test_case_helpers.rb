@@ -46,7 +46,7 @@ module Chatops::Controller::TestCaseHelpers
       metadata = metadata.dup
       metadata["name"] = name
       prefix = chatops_prefix ? "#{chatops_prefix} " : ""
-      metadata["regex"] = Regexp.new("^#{prefix}#{metadata["regex"]}$", "i")
+      metadata["regex"] = %r{\A#{prefix}#{metadata["regex"]}\z}im
       metadata
     }
 
