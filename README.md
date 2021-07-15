@@ -125,7 +125,7 @@ which will be accepted. This is helpful when rolling keys.
 
 ## Rails compatibility
 
-This gem is intended to work with rails 4.x and 5.x. If you find a version
+This gem is intended to work with rails 6.x and 7.x. If you find a version
 with a problem, please report it in an issue.
 
 ## Development
