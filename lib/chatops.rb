@@ -23,8 +23,8 @@ module Chatops
     ENV["CHATOPS_AUTH_ALT_PUBLIC_KEY"]
   end
 
-  def self.auth_base_url
-    ENV[auth_base_url_env_var_name]
+  def self.auth_base_urls
+    ENV.fetch(auth_base_url_env_var_name, "").split(",").map(&:strip)
   end
 
   def self.auth_base_url_env_var_name

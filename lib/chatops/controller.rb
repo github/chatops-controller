@@ -118,26 +118,30 @@ module Chatops
     end
 
     def ensure_chatops_authenticated
-      body = request.raw_post || ""
-      signature_string = [@chatops_url, @chatops_nonce, @chatops_timestamp, body].join("\n")
-      # We return this just to aid client debugging.
-      response.headers["Chatops-Signature-String"] = Base64.strict_encode64(signature_string)
       raise ConfigurationError.new("You need to add a client's public key in .pem format via #{Chatops.public_key_env_var_name}") unless Chatops.public_key.present?
-      if signature_valid?(Chatops.public_key, @chatops_signature, signature_string) ||
-          signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
-          return true
+
+      body = request.raw_post || ""
+
+      valid = @chatops_urls.any? do |url|
+        signature_string = [url, @chatops_nonce, @chatops_timestamp, body].join("\n")
+        # We return this just to aid client debugging.
+        response.headers["Chatops-Signature-String"] = Base64.strict_encode64(signature_string)
+        if signature_valid?(Chatops.public_key, @chatops_signature, signature_string) ||
+            signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
+            return true
+        end
       end
+
+      return true if valid
       return jsonrpc_error(-32800, 403, "Not authorized")
     end
 
     def ensure_valid_chatops_url
-      unless Chatops.auth_base_url.present?
+      unless Chatops.auth_base_urls.present?
         raise ConfigurationError.new("You need to set the server's base URL to authenticate chatops RPC via #{Chatops.auth_base_url_env_var_name}")
       end
-      if Chatops.auth_base_url[-1] == "/"
-        raise ConfigurationError.new("Don't include a trailing slash in #{Chatops.auth_base_url_env_var_name}; the rails path will be appended and it must match exactly.")
-      end
-      @chatops_url = Chatops.auth_base_url + request.path
+
+      @chatops_urls = Chatops.auth_base_urls.map { |url| url.chomp("/") + request.path }
     end
 
     def ensure_valid_chatops_nonce

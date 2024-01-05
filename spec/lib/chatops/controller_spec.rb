@@ -56,7 +56,7 @@ describe ActionController::Base, type: :controller do
 
     @private_key = OpenSSL::PKey::RSA.new(2048)
     ENV["CHATOPS_AUTH_PUBLIC_KEY"] = @private_key.public_key.to_pem
-    ENV["CHATOPS_AUTH_BASE_URL"] = "http://test.host"
+    ENV["CHATOPS_AUTH_BASE_URL"] = "http://old.host,http://test.host/"
   end
 
   def rails_flexible_post(path, outer_params, jsonrpc_params = nil)
@@ -315,7 +315,7 @@ describe ActionController::Base, type: :controller do
         :room_id => "#someroom",
         :unknown_key => "few" # This should get ignored
       }, {
-       "app" => "foo" 
+       "app" => "foo"
       }
       expect(json_response).to eq({
         "jsonrpc" => "2.0",
@@ -323,7 +323,7 @@ describe ActionController::Base, type: :controller do
         "result" => "{\"params\":{\"action\":\"proxy_parameters\",\"chatop\":\"proxy_parameters\",\"controller\":\"anonymous\",\"mention_slug\":\"mention_slug_here\",\"message_id\":\"message_id_here\",\"room_id\":\"#someroom\",\"user\":\"foo\"},\"jsonrpc_params\":{\"app\":\"foo\"}}"
       })
       expect(response.status).to eq 200
-    end 
+    end
 
 
     it "uses typical controller fun like before_action" do
