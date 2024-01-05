@@ -1,6 +1,6 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-gem 'rails'
+gem "rails", "~> 6"
 
 group :development, :test do
   gem "rspec-rails", "~> 3"
