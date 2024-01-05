@@ -15,6 +15,5 @@ jobs:
         ruby-version: 2.7.2
     - name: Build and test
       run: |
-        gem install rails -v "~> 6"
         bundle install --binstubs
         bin/rspec
