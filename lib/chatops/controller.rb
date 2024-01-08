@@ -122,17 +122,16 @@ module Chatops
 
       body = request.raw_post || ""
 
-      valid = @chatops_urls.any? do |url|
+      @chatops_urls.each do |url|
         signature_string = [url, @chatops_nonce, @chatops_timestamp, body].join("\n")
         # We return this just to aid client debugging.
         response.headers["Chatops-Signature-String"] = Base64.strict_encode64(signature_string)
         if signature_valid?(Chatops.public_key, @chatops_signature, signature_string) ||
             signature_valid?(Chatops.alt_public_key, @chatops_signature, signature_string)
-            return true
+          return true
         end
       end
 
-      return true if valid
       return jsonrpc_error(-32800, 403, "Not authorized")
     end
 
