@@ -114,11 +114,12 @@ two environment variables to use this protocol:
 format. This environment variable will be the contents of a `.pub` file,
 newlines and all.
 
-`CHATOPS_AUTH_BASE_URL` is the base URL of your server as the chatops client
+`CHATOPS_AUTH_BASE_URL` is the base URLs of your servers as the chatops client
 sees it. This is specified as an environment variable since rails will trust
 client headers about a forwarded hostname. For example, if your chatops client
 has added the url `https://example.com/_chatops`, you'd set this to
-`https://example.com`.
+`https://example.com`. You can specify more than one base url divided by comma,
+e.g. `https://example.com,https://example2.com`
 
 You can also optionally set `CHATOPS_AUTH_ALT_PUBLIC_KEY` to a second public key
 which will be accepted. This is helpful when rolling keys.
