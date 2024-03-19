@@ -47,7 +47,7 @@ bridge, and we find this maps well to the asymmetric crypto authentication.
 
 ### Keyword Arguments
 
-We pair this system with <https://github.com/hubot-scripts/hubot-chatops-rpc>, which
+We pair this system with <https://github.com/bhuga/hubot-chatops-rpc>, which
 provides generic argument support for long arguments, like `--argument foo`.
 While regexes create much more natural commands, rarely used options tend to
 create ugly regexes that are hard to test. If a command can potentially take 10
