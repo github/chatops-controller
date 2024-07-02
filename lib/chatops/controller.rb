@@ -168,8 +168,8 @@ module Chatops
     def ensure_valid_chatops_timestamp
       @chatops_timestamp = request.headers["Chatops-Timestamp"]
       time = Time.iso8601(@chatops_timestamp)
-      if !(time > 1.minute.ago && time < 1.minute.from_now)
-        return jsonrpc_error(-32803, 403, "Chatops timestamp not within 1 minute of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}")
+      if !(time > Chatops::ALLOWED_TIME_SKEW_MINS.minute.ago && time < Chatops::ALLOWED_TIME_SKEW_MINS.minute.from_now)
+        return jsonrpc_error(-32803, 403, "Chatops timestamp not within #{Chatops::ALLOWED_TIME_SKEW_MINS} minutes of server time: #{@chatops_timestamp} vs #{Time.now.utc.iso8601}")
       end
     rescue ArgumentError, TypeError
       # time parsing or missing can raise these
