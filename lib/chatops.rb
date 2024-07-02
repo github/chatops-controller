@@ -11,6 +11,8 @@ module Chatops
     threaded_and_channel: 2,
   }.freeze
 
+  ALLOWED_TIME_SKEW_MINS = 5
+
   def self.public_key
     ENV[public_key_env_var_name]
   end
