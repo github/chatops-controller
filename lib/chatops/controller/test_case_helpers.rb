@@ -42,6 +42,7 @@ module Chatops::Controller::TestCaseHelpers
   def chat(message, user, room_id = "123", message_id = "456")
     get :list
     json_response = JSON.load(response.body)
+    raise "Invalid Chatop response - BODY: #{json_response}" unless json_response.key?("methods")
     matchers = json_response["methods"].map { |name, metadata|
       metadata = metadata.dup
       metadata["name"] = name
@@ -75,6 +76,7 @@ module Chatops::Controller::TestCaseHelpers
 
   def chatop_error
     json_response = JSON.load(response.body)
+    raise "There is no chatop error - BODY: #{json_response}" unless json_response.key?("error")
     json_response["error"]["message"]
   end
 
